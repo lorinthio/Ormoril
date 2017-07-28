@@ -1,6 +1,7 @@
 from threading import Thread
 from Database import DatabaseService
-from PacketHandler import ServerPacketHandler
+from PacketHandlers.AccountPacketHandler import AccountPacketHandler
+from PacketHandlers.PlayerPacketHandler import PlayerPacketHandler
 from Client import ClientConnection
 import Common.Serialization as Serialization
 import socket
@@ -10,10 +11,12 @@ class Server:
     def __init__(self):
         self.players = []
         self.dbService = DatabaseService()
-        self.packetHandler = ServerPacketHandler(self, self.dbService)
+        self.accountPacketHandler = AccountPacketHandler(self, self.dbService)
+        self.playerPacketHandler = PlayerPacketHandler(self, self.dbService)
         self.currentID = 0
+        self.config = Config()
         self.host = ""
-        self.port = 8123
+        self.port = self.config.port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind((self.host, self.port))
@@ -30,13 +33,31 @@ class Server:
         try:
             packet = client.recv(1024)
             data = Serialization.deserialize(packet)
-            self.packetHandler.handlePacket(data, client)
+            self.accountPacketHandler.handlePacket(data, client)
         except:
             pass
             
-    def playerLogin(self, client):
+    def playerLogin(self, client, username):
         self.currentID += 1
-        self.players.append(ClientConnection(self.packetHandler, client, self.currentID))
+        self.players.append(ClientConnection(self.playerPacketHandler, client, self.currentID, username))
+        
+class Config:
+    
+    def __init__(self):
+        self.port = 8123
+        self.load()
+        
+    def load(self):
+        configFile = open("config.txt", "r")
+        for line in configFile.readlines():
+            try:
+                line = line.lower()
+                if "port" in line:
+                    self.port = int(line.replace("port:", "").strip())
+            except:
+                print "There was an issue with line,"
+                print " > " + line
+                print "in your config.txt"
         
 if __name__ == "__main__":
     server = Server().listen()

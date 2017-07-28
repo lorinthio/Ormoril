@@ -28,6 +28,7 @@ RUN SERVER
 
 RUN CLIENT
 1) In the "Main" folder
+2) Edit the config.txt to point to the ip/port you desire
 2) Go into "Client"
 3) run "run.bat"
 4) You will now connect to your local server
@@ -49,7 +50,7 @@ RUN CLIENT
 - Exploration
 - Make short dungeon
 - Rooms with descriptions and exits
-- Client UI to represent available directions
+- Client UI/buttons to represent available directions
 - 'See' other players in room
 - 'Chat' with other players in room
 

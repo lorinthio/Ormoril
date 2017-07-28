@@ -5,15 +5,16 @@ from time import sleep
 
 class ClientConnection:
     
-    def __init__(self, packetHandler, client, ID):
+    def __init__(self, packetHandler, client, ID, accountName):
         self.packetHandler = packetHandler
+        self.accountName = accountName
         self.dataSize = 1024
         self.client = client
         self.ID = ID
         self.loop()
         
     def loop(self):
-        print "Player connected with instance ID : " + str(self.ID)
+        print self.accountName + " has connected!"
         while self.client:
             try:
                 packet = self.client.recv(self.dataSize)

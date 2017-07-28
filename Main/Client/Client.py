@@ -14,10 +14,10 @@ class ClientConnection:
         self.stopped = False
         self.connected = False
         self.characterPacketHandler = CharacterPacketHandler(self, CharacterFrame)
+        self.loanConfig()
     
     def connect(self, username, password):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.config = Config()
         self.conn.connect((self.config.ip, self.config.port))
         self.packetSize = 1024
         

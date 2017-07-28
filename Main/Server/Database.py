@@ -24,6 +24,7 @@ class DatabaseService:
         
     def createTables(self):
         self.getCursor().execute("CREATE TABLE IF NOT EXISTS accounts (id integer primary key autoincrement unique, username varchar(20) unique, password varchar(20), email varchar(50) unique)")
+        self.getCursor().execute("CREATE TABLE IF NOT EXISTS accounts (id integer primary key autoincrement unique, username varchar(20) unique, password varchar(20), email varchar(50) unique)")
         self.getDBConnection().commit()
 
     #####################

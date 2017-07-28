@@ -2,7 +2,7 @@ from Common.Utils import PacketTypes
 import Common.Serialization as Serialization
 import Errors
 
-class ServerPacketHandler:
+class AccountPacketHandler:
     
     def __init__(self, Server, Database):
         self.server = Server
@@ -71,7 +71,7 @@ class ServerPacketHandler:
         if account:
             if username == account[1] and password == account[2]:
                 sendPacketToClient(client, PacketTypes.LOGIN_ATTEMPT_RESPONSE, {"success": True})
-                self.server.playerLogin(client)
+                self.server.playerLogin(client, username)
             else:
                 sendPacketToClient(client, PacketTypes.LOGIN_ATTEMPT_RESPONSE, {"success": False})           
         else:
