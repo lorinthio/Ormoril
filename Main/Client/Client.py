@@ -13,13 +13,13 @@ class ClientConnection:
     def setupVariables(self, CharacterFrame):
         self.stopped = False
         self.connected = False
+        self.packetSize = 1024
         self.characterPacketHandler = CharacterPacketHandler(self, CharacterFrame)
-        self.loanConfig()
+        self.loadConfig()
     
     def connect(self, username, password):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.conn.connect((self.config.ip, self.config.port))
-        self.packetSize = 1024
         
         # Send Login Attempt Connect
         
@@ -57,19 +57,19 @@ class ClientConnection:
         while not self.stopped and self.conn:
             try:
                 packet = deserialize(self.conn.recv(self.packetSize))
-                message = packet["message"]
-                
-                #Player Login Attempt
-                if message == PacketTypes.LOGIN_ATTEMPT_RESPONSE:
-                    success = packet["data"]["success"]
-                    if success:
-                        self.connected = True
-                    else:
-                        self.connected = False
-                        exit()
-                if PacketTypes.CHARACTER_PACKETS[0] <= message and message <= PacketTypes.CHARACTER_PACKETS[1]:
-                    self.characterPacketHandler.handlePacket(packet)
-                
+                if packet:
+                    message = packet["message"]
+                    
+                    #Player Login Attempt
+                    if message == PacketTypes.LOGIN_ATTEMPT_RESPONSE:
+                        success = packet["data"]["success"]
+                        if success:
+                            self.connected = True
+                        else:
+                            self.connected = False
+                            exit()
+                    if PacketTypes.CHARACTER_PACKETS[0] <= message and message <= PacketTypes.CHARACTER_PACKETS[1]:
+                        self.characterPacketHandler.handlePacket(packet)
             except:
                 self.disconnect()     
                 

@@ -13,41 +13,44 @@ class LoginWindow(Frame):
     def __init__(self, player, master=None):
         Frame.__init__(self, master)
         self.player = player
-        config = Config()
+        self.config = Config()
         self.setupVariables()
         self.createLoginWindow()
-        self.ServerAddress = config.ip # Change this when releasing
-        self.Port = config.port
-        self.PacketSize = 1024
         
     def setupVariables(self):
         self.username = StringVar()
         self.password = StringVar()
         self.email = StringVar()
         self.activeFrame = None
+        self.PacketSize = 1024
         
     def createLoginWindow(self):
         if self.activeFrame:
             self.activeFrame.destroy()
         width = 250
-        height = 70
+        height = 90
         
         frame = Frame(self.master)
         setupGrid(self.master, 2, 3)
-        frame.grid(row=0, column=0, rowspan=3, columnspan=2)
+        frame.grid(row=1, column=0, rowspan=3, columnspan=2)
         self.activeFrame = frame
-        setupGrid(frame, 2, 3)
+        setupGrid(frame, 2, 4)
         self.master.title("Login")
         self.master.minsize(width, height)
         self.master.maxsize(width, height)
         
-        Label(frame, text="Username : ").grid(row=0, column=0, sticky=E)
-        Label(frame, text="Password : ").grid(row=1, column=0, sticky=E)
-        Entry(frame, textvariable=self.username).grid(row=0, column=1, sticky=W)
-        Entry(frame, textvariable=self.password, show="*").grid(row=1, column=1, sticky=W)
-        Button(frame, command=self.attemptLogin, text="Login").grid(row=2, column=0)
-        Button(frame, command=self.createAccountCreationWindow, text="Register").grid(row=2, column=1)
+        playerCount = self.getPlayerCount()
+        Label(frame, text="Players Online : {}".format(playerCount)).grid(row=0, column=0, columnspan=2, sticky=W+E)
+        Label(frame, text="Username : ").grid(row=1, column=0, sticky=E)
+        Label(frame, text="Password : ").grid(row=2, column=0, sticky=E)
+        Entry(frame, textvariable=self.username).grid(row=1, column=1, sticky=W)
+        Entry(frame, textvariable=self.password, show="*").grid(row=2, column=1, sticky=W)
+        Button(frame, command=self.attemptLogin, text="Login").grid(row=3, column=0)
+        Button(frame, command=self.createAccountCreationWindow, text="Register").grid(row=3, column=1)
         centerWindow(self.master, width, height)
+        
+        if playerCount == None:
+            self.failedConnection()
         
     def createAccountCreationWindow(self):
         if self.activeFrame:
@@ -75,7 +78,7 @@ class LoginWindow(Frame):
     def attemptLogin(self):
         try:
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            conn.connect((self.ServerAddress, self.Port))
+            conn.connect((self.config.ip, self.config.port))
             try:
                 packet = Serialization.pack(PacketTypes.LOGIN, {"username": self.username.get().lower(), "password": self.password.get()})
                 conn.send(packet)
@@ -93,6 +96,24 @@ class LoginWindow(Frame):
                 conn.close()
         except:
             self.failedConnection()        
+      
+    def getPlayerCount(self):
+        try:
+            conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            conn.connect((self.config.ip, self.config.port))
+            try:
+                packet = Serialization.pack(PacketTypes.PLAYER_COUNT, None)
+                conn.send(packet)
+                data = conn.recv(self.PacketSize)
+                if data:
+                    data = Serialization.deserialize(data)
+                    messageType = data["message"]
+                    if(messageType == PacketTypes.PLAYER_COUNT):
+                        return data["data"]["count"]
+            except:
+                conn.close()
+        except:
+            pass
       
     def updatePlayer(self):
         self.player.username = self.username.get()
@@ -117,7 +138,7 @@ class LoginWindow(Frame):
     def attemptCreate(self):
         try:
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            conn.connect((self.ServerAddress, self.Port))
+            conn.connect((self.config.ip, self.config.port))
             try:
                 packet = Serialization.pack(PacketTypes.ACCOUNT_CREATE, {"username": self.username.get().lower(), "password": self.password.get(), "email": self.email.get()})
                 conn.send(packet)

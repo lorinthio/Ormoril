@@ -5,13 +5,20 @@ from time import sleep
 
 class ClientConnection:
     
-    def __init__(self, packetHandler, client, ID, accountName):
+    def __init__(self, server, packetHandler, client, ID, accountName):
+        self.server = server
         self.packetHandler = packetHandler
         self.accountName = accountName
         self.dataSize = 1024
         self.client = client
         self.ID = ID
         self.loop()
+        
+    def notifyPlayerLoggedOn(self, username):
+        self.send(PacketTypes.PLAYER_ONLINE, {"username": username})
+        
+    def notifyPlayerLoggedOff(self, username):
+        self.send(PacketTypes.PLAYER_OFFLINE, {"username": username})          
         
     def loop(self):
         print self.accountName + " has connected!"
@@ -21,10 +28,17 @@ class ClientConnection:
                 data = Serialization.deserialize(packet)
                 self.packetHandler.handlePacket(data, self)
             except:
-                self.client.close()
-                self.client = None
+                self.close()
             
+    def close(self):
+        print self.accountName + " has disconnected!"
+        self.client.close()
+        self.server.playerLogoff(self, self.accountName)
+        self.client = None
+        
     def send(self, message, data):
         packet = Serialization.pack(message, data)
         if self.client:
             self.client.send(packet)
+            
+    

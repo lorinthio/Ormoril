@@ -12,13 +12,17 @@ class AccountPacketHandler:
         msg = packet["message"]
         data = packet["data"]
         
-        if(msg == PacketTypes.LOGIN):
+        if(msg == PacketTypes.PLAYER_COUNT):
+            self.handlePlayerCount(client)
+        elif(msg == PacketTypes.LOGIN):
             self.handleLogin(data, client)
         elif(msg == PacketTypes.ACCOUNT_CREATE):
             self.handleAccountCreate(data, client)
         elif(msg == PacketTypes.LOGIN_ATTEMPT_CONNECT):
             self.handleConnect(data, client)
             
+    def handlePlayerCount(self, client):
+        sendPacketToClient(client, PacketTypes.PLAYER_COUNT, {"count": self.server.playerCount})
             
     def handleLogin(self, data, client):
         username = data["username"]

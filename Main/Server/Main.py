@@ -14,6 +14,7 @@ class Server:
         self.accountPacketHandler = AccountPacketHandler(self, self.dbService)
         self.playerPacketHandler = PlayerPacketHandler(self, self.dbService)
         self.currentID = 0
+        self.playerCount = 0
         self.config = Config()
         self.host = ""
         self.port = self.config.port
@@ -39,7 +40,19 @@ class Server:
             
     def playerLogin(self, client, username):
         self.currentID += 1
-        self.players.append(ClientConnection(self.playerPacketHandler, client, self.currentID, username))
+        self.playerCount += 1
+        self.dbService.markPlayerOnline(username)
+        for player in self.players:
+            player.notifyPlayerLoggedOn(username)
+            
+        print "Players Online : {}".format(self.playerCount)
+        self.players.append(ClientConnection(self, self.playerPacketHandler, client, self.currentID, username))
+        
+    def playerLogoff(self, player, username):
+        self.playerCount -= 1
+        for player in self.players:
+            player.notifyPlayerLoggedOff(username)
+        print "Players Online : {}".format(self.playerCount)
         
 class Config:
     

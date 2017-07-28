@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name="OrmorilCommon",
-      version='0.2.1',
+      version='0.2.4',
       description="A package used to share packet information and other utilities between client and server",
       url="http://github.com/lorinthio/TextBasedRpg",
       author="Lorinthio",

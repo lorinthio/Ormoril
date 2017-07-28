@@ -43,6 +43,16 @@ class PacketTypes:
     # Server
     CHARACTER_LOAD = 25
     CHARACTER_VITAL_TICK = 26
+    
+    ###################
+    ##    Social 
+    ###################
+    # Server
+    PLAYER_COUNT = 40
+    PLAYER_ONLINE = 41
+    PLAYER_OFFLINE = 42
+    CHARACTER_ONLINE = 43
+    CHARACTER_OFFLINE = 44
 
 def toSqlString(value):
     return "'" + str(value) + "'"
