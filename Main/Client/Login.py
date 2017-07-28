@@ -1,8 +1,9 @@
 from Tkinter import *
 from Commands import enterChatVar
 from Common.WindowHelpers import setupGrid, centerWindow, makeNotification
-from Common.Utils import PacketTypes, getConfig
+from Common.Utils import PacketTypes
 from Objects import Player
+from Client import Config
 import cPickle as pickle
 import socket
 import Common.Serialization as Serialization
@@ -12,12 +13,12 @@ class LoginWindow(Frame):
     def __init__(self, player, master=None):
         Frame.__init__(self, master)
         self.player = player
+        config = Config()
         self.setupVariables()
         self.createLoginWindow()
-        config = getConfig()
-        self.ServerAddress = config.ServerAddress # Change this when releasing
-        self.Port = config.Port
-        self.PacketSize = config.PacketSize
+        self.ServerAddress = config.ip # Change this when releasing
+        self.Port = config.port
+        self.PacketSize = 1024
         
     def setupVariables(self):
         self.username = StringVar()
@@ -95,6 +96,7 @@ class LoginWindow(Frame):
       
     def updatePlayer(self):
         self.player.username = self.username.get()
+        self.player.password = self.password.get()
         self.player.isLoggedIn = True
       
     def showLoginSuccess(self):

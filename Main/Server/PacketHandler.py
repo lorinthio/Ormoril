@@ -1,4 +1,5 @@
 from Common.Utils import PacketTypes
+import Common.Serialization as Serialization
 import Errors
 
 class ServerPacketHandler:
@@ -15,6 +16,9 @@ class ServerPacketHandler:
             self.handleLogin(data, client)
         elif(msg == PacketTypes.ACCOUNT_CREATE):
             self.handleAccountCreate(data, client)
+        elif(msg == PacketTypes.LOGIN_ATTEMPT_CONNECT):
+            self.handleConnect(data, client)
+            
             
     def handleLogin(self, data, client):
         username = data["username"]
@@ -23,11 +27,11 @@ class ServerPacketHandler:
         account = self.database.getAccountByName(username)
         if account:
             if username == account[1] and password == account[2]:
-                client.send(PacketTypes.LOGIN_SUCCESS, None)
+                sendPacketToClient(client, PacketTypes.LOGIN_SUCCESS, None)
             else:
-                client.send(PacketTypes.LOGIN_FAILURE, None)
+                sendPacketToClient(client, PacketTypes.LOGIN_FAILURE, None)
         else:
-            client.send(PacketTypes.LOGIN_FAILURE, None)
+            sendPacketToClient(client, PacketTypes.LOGIN_FAILURE, None)
             
     def handleAccountCreate(self, data, client):
         username = data["username"]
@@ -36,27 +40,43 @@ class ServerPacketHandler:
         
         if len(username) < 7 or len(username) > 20:
             # Usernames are between 7 and 20 characters long
-            client.send(PacketTypes.ACCOUNT_CREATE_FAILURE_INVALID_USERNAME, None)
+            sendPacketToClient(client, PacketTypes.ACCOUNT_CREATE_FAILURE_INVALID_USERNAME, None)
             return
         elif not set('1234567890').intersection(password):
             # Password requires a number and special character
-            client.send(PacketTypes.ACCOUNT_CREATE_FAILURE_INVALID_PASSWORD, None)
+            sendPacketToClient(client, PacketTypes.ACCOUNT_CREATE_FAILURE_INVALID_PASSWORD, None)
             return
         elif '@' not in email:
             # Email requires @
-            client.send(PacketTypes.ACCOUNT_CREATE_FAILURE_INVALID_EMAIL, None)
+            sendPacketToClient(client, PacketTypes.ACCOUNT_CREATE_FAILURE_INVALID_EMAIL, None)
             return
         elif self.database.getAccountByEmail(email):
-            client.send(PacketTypes.ACCOUNT_CREATE_FAILURE_EMAIL_EXISTS, None)
+            sendPacketToClient(client, PacketTypes.ACCOUNT_CREATE_FAILURE_EMAIL_EXISTS, None)
             return
         elif self.database.getAccountByName(username):
-            client.send(PacketTypes.ACCOUNT_CREATE_FAILURE_USERNAME_EXISTS, None)
+            sendPacketToClient(client, PacketTypes.ACCOUNT_CREATE_FAILURE_USERNAME_EXISTS, None)
             return
         
         try:
             self.database.createAccount(username, password, email)
-            client.send(PacketTypes.ACCOUNT_CREATE_SUCCESS, None)
+            sendPacketToClient(client, PacketTypes.ACCOUNT_CREATE_SUCCESS, None)
         except Errors.AccountAlreadyExists:
-            client.send(PacketTypes.ACCOUNT_CREATE_FAILURE_ACCOUNT_EXISTS, None)
+            sendPacketToClient(client, PacketTypes.ACCOUNT_CREATE_FAILURE_ACCOUNT_EXISTS, None)
+            
+    def handleConnect(self, data, client):
+        username = data["username"]
+        password = data["password"]
         
-        
+        account = self.database.getAccountByName(username)
+        if account:
+            if username == account[1] and password == account[2]:
+                sendPacketToClient(client, PacketTypes.LOGIN_ATTEMPT_RESPONSE, {"success": True})
+                self.server.playerLogin(client)
+            else:
+                sendPacketToClient(client, PacketTypes.LOGIN_ATTEMPT_RESPONSE, {"success": False})           
+        else:
+            sendPacketToClient(client, PacketTypes.LOGIN_ATTEMPT_RESPONSE, {"success": False})
+            
+def sendPacketToClient(client, message, data):
+    packet = Serialization.pack(message, data)
+    client.send(packet)     

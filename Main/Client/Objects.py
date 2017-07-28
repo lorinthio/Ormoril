@@ -7,6 +7,7 @@ class Player:
         
     def setupVariables(self):
         self.username = ""
+        self.password = ""
         self.isLoggedIn = False
         
 class Race:

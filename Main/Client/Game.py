@@ -13,12 +13,12 @@ class GameWindow(Frame):
         Frame.__init__(self, master)
         setupGrid(self.master, 7, 6)
         self.setupVariables()
-        self.connect()
         self.setupWindow()
         self.setupChatFrame()
-        self.characterFrame = CharacterFrame(self.master, self.client)
+        self.characterFrame = CharacterFrame(self.master)
         self.entryBar()
         self.setupKeyBindings()
+        self.connect()
 
     def setupVariables(self):
         self.entryVar = StringVar()
@@ -31,7 +31,7 @@ class GameWindow(Frame):
         self.master["bg"] = "white"
         
     def setupChatFrame(self):
-        chatText = Text(self.master, wrap=WORD)
+        chatText = Text(self.master, wrap=WORD, state=DISABLED)
         chatText.grid(row=0, column=3, rowspan=6, columnspan=4, sticky=W+E+S+N)
         scrollbar = Scrollbar(self.master, command=chatText.yview)
         chatText['yscrollcommand'] = scrollbar.set
@@ -46,8 +46,8 @@ class GameWindow(Frame):
         Entry(self.master, textvariable=self.entryVar).grid(row=5, column=3, rowspan=1, columnspan=4, sticky=W+E+S)
         
     def connect(self):
-        self.client = ClientConnection()
-        self.client.connect()
+        self.client = ClientConnection(self.characterFrame)
+        self.client.connect(self.player.username, self.player.password)
         self.master.protocol("WM_DELETE_WINDOW", self.disconnect)
         
     def disconnect(self):
@@ -56,26 +56,40 @@ class GameWindow(Frame):
 
 class CharacterFrame(Frame):
     
-    def __init__(self, master, client):
+    def __init__(self, master):
         self.setupVariables()
         frame = Frame(master)
         frame.grid(row=0, column=0, rowspan=6, columnspan=3, sticky=W+E+S+N)
     
         Label(frame, text="Character", font=("Helvetica", 16)).grid(row=0, column=0, sticky=W)
         
-        Label(frame, text="Health", font=("Helvetica", 12)).grid(row=1, column=0, sticky=W)
+        #Health
+        health = Label(frame, text="Health", font=("Helvetica", 12))
+        health.grid(row=1, column=0, sticky=W)
+        self.widgets["healthText"] = health
         can = Canvas(frame, width=200, height=14)
         can.grid(row=2, column=0, sticky=W+E)
-        can.create_rectangle(0, 0, 200, 14, fill="green")
-        Label(frame, text="Mana", font=("Helvetica", 12)).grid(row=3, column=0, sticky=W)
+        self.widgets["healthCanvas"] = can
+        self.widgets["healthBar"] = can.create_rectangle(0, 0, 200, 14, fill="green")
+        
+        #Mana
+        mana = Label(frame, text="Mana", font=("Helvetica", 12))
+        mana.grid(row=3, column=0, sticky=W)
+        self.widgets["manaText"] = mana
         can = Canvas(frame, width=200, height=14)
         can.grid(row=4, column=0, sticky=W+E)
-        rect = can.create_rectangle(0, 0, 200, 14, fill="blue")
+        self.widgets["manaCanvas"] = can
+        self.widgets["manaBar"] = can.create_rectangle(0, 0, 200, 14, fill="blue")
         
-        can.coords(rect, 0,0,100,14)
+    def changeVital(self, vital, curValue, maxValue):
+        vitalTitle = vital.title()
+        self.widgets[vital + "Text"].configure(text = vitalTitle + " : " + str(curValue) + " / " + str(maxValue))
+        fraction = (1.0 * curValue) / (1.0* maxValue)
+        self.widgets[vital + "Canvas"].coords(self.widgets[vital + "Bar"], 0, 0, 200 * fraction, 14)
         
     def setupVariables(self):
         self.hero = Hero()
+        self.widgets = {}
         
     def handleCharacterPacket(self, packet):
         return

@@ -9,9 +9,11 @@ class PacketTypes:
     LOGIN_PACKETS = (5, 9)
     # Client
     LOGIN = 5
+    LOGIN_ATTEMPT_CONNECT = 6
     # Server
-    LOGIN_SUCCESS = 6
-    LOGIN_FAILURE = 7
+    LOGIN_SUCCESS = 7
+    LOGIN_FAILURE = 8
+    LOGIN_ATTEMPT_RESPONSE = 9
     
     ###################
     ##    Account 
@@ -41,17 +43,6 @@ class PacketTypes:
     # Server
     CHARACTER_LOAD = 25
     CHARACTER_VITAL_TICK = 26
-    
-
-class Config:
-    
-    def __init__(self):
-        self.ServerAddress = "localhost"
-        self.Port = 8123
-        self.PacketSize = 1024
-        
-def getConfig():
-    return Config()
 
 def toSqlString(value):
     return "'" + str(value) + "'"
