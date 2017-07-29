@@ -1,2 +1,2 @@
-ip: 10.0.1.127
+ip: localhost
 port: 8123

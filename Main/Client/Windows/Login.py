@@ -28,10 +28,10 @@ class LoginWindow(Frame):
         if self.activeFrame:
             self.activeFrame.destroy()
         width = 250
-        height = 90
+        height = 110
         
         frame = Frame(self.master)
-        setupGrid(self.master, 2, 3)
+        setupGrid(self.master, 2, 4)
         frame.grid(row=1, column=0, rowspan=3, columnspan=2)
         self.activeFrame = frame
         setupGrid(frame, 2, 4)
@@ -40,17 +40,22 @@ class LoginWindow(Frame):
         self.master.maxsize(width, height)
         
         playerCount = self.getPlayerCount()
-        Label(frame, text="Players Online : {}".format(playerCount)).grid(row=0, column=0, columnspan=2, sticky=W+E)
-        Label(frame, text="Username : ").grid(row=1, column=0, sticky=E)
-        Label(frame, text="Password : ").grid(row=2, column=0, sticky=E)
-        Entry(frame, textvariable=self.username).grid(row=1, column=1, sticky=W)
-        Entry(frame, textvariable=self.password, show="*").grid(row=2, column=1, sticky=W)
-        Button(frame, command=self.attemptLogin, text="Login").grid(row=3, column=0)
-        Button(frame, command=self.createAccountCreationWindow, text="Register").grid(row=3, column=1)
-        centerWindow(self.master, width, height)
+        serverOnline = playerCount != None
+        Label(frame, text="Server Status : ".format(playerCount)).grid(row=0, column=0, sticky=E)
+        if serverOnline:
+            Label(frame, text="Online", foreground="forest green").grid(row=0, column=1, sticky=W)
+        else:
+            Label(frame, text="Offline", foreground="red").grid(row=0, column=1, sticky=W)
         
-        if playerCount == None:
-            self.failedConnection()
+        Label(frame, text="Players Online : ").grid(row=1, column=0, sticky=E)
+        Label(frame, text="{}".format(playerCount)).grid(row=1, column=1, sticky=W)
+        Label(frame, text="Username : ").grid(row=2, column=0, sticky=E)
+        Label(frame, text="Password : ").grid(row=3, column=0, sticky=E)
+        Entry(frame, textvariable=self.username).grid(row=2, column=1, sticky=W)
+        Entry(frame, textvariable=self.password, show="*").grid(row=3, column=1, sticky=W)
+        Button(frame, command=self.attemptLogin, text="Login").grid(row=4, column=0)
+        Button(frame, command=self.createAccountCreationWindow, text="Register").grid(row=4, column=1)
+        centerWindow(self.master, width, height)
         
     def createAccountCreationWindow(self):
         if self.activeFrame:
