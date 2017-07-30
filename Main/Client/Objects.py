@@ -9,11 +9,13 @@ class Player:
         self.username = ""
         self.password = ""
         self.isLoggedIn = False
+        self.character = None
         
 class Race:
         
-    def __init__(self):
-        self.setupVariables()
+    def __init__(self, **kwargs):
+        self.setupVariables(kwargs)
+        self.handleKeywords(kwargs)
         
     def setupVariables(self):
         self.maxhealth = 0
@@ -33,7 +35,41 @@ class Race:
         self.mDefense = 0
     
         self.accuracy = 0
-        self.dodge = 0    
+        self.dodge = 0
+        
+    def handleKeywords(self):
+        if "maxhealth" in kwargs:
+            self.maxhealth = kwargs["maxhealth"]
+        if "maxmana" in kwargs:
+            self.maxmana = kwargs["maxmana"]
+        if "strength" in kwargs:
+            self.strength = kwargs["strength"]
+        if "constitution" in kwargs:
+            self.constitution = kwargs["constitution"]
+        if "dexterity" in kwargs:
+            self.dexterity = kwargs["dexterity"]
+        if "agility" in kwargs:
+            self.agility = kwargs["agility"]
+        if "wisdom" in kwargs:
+            self.wisdom = kwargs["wisdom"]
+        if "intelligence" in kwargs:
+            self.intelligence = kwargs["intelligence"]
+    
+        if "pAttack" in kwargs:
+            self.pAttack = kwargs["pAttack"]
+        if "pDefense" in kwargs:
+            self.pDefense = kwargs["pDefense"]
+            
+        if "mAttack" in kwargs:
+            self.mAttack = kwargs["mAttack"]
+        if "mDefense" in kwargs:
+            self.mDefense = kwargs["mDefense"]
+            
+        if "accuracy" in kwargs:
+            self.accuracy = kwargs["accuracy"]
+        if "dodge" in kwargs:
+            self.dodge = kwargs["dodge"]
+        
         
     def applyToHero(self, hero):
         hero.race = self

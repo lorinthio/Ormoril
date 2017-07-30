@@ -3,6 +3,7 @@ from Database import DatabaseService
 from PacketHandlers.AccountPacketHandler import AccountPacketHandler
 from PacketHandlers.PlayerPacketHandler import PlayerPacketHandler
 from Client import ClientConnection
+from ModLoader import ModLoader
 import Common.Serialization as Serialization
 import socket
 
@@ -10,6 +11,7 @@ class Server:
     
     def __init__(self):
         self.players = []
+        self.modLoader = ModLoader()
         self.dbService = DatabaseService()
         self.accountPacketHandler = AccountPacketHandler(self, self.dbService)
         self.playerPacketHandler = PlayerPacketHandler(self, self.dbService)
