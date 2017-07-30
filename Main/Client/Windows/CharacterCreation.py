@@ -77,7 +77,7 @@ class CharacterCreationWindow(Frame):
         self.dexterityVar = IntVar()
         self.agiltyVar = IntVar()
         self.wisdomVar = IntVar()
-        self.intelligenceVar = IntVar()        
+        self.intelligenceVar = IntVar()
         
         firstRace = self.races.itervalues().next()
         firstClass = self.classes.itervalues().next()
@@ -143,7 +143,35 @@ class CharacterCreationWindow(Frame):
         #wisdom.bind("ENTER", self.hoverWisdom)
         Label(self.master, textvariable=self.wisdomVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=4, column=6, sticky=W)        
         
+        Button(self.master, text="Randomize", command=self.randomize).grid(row=5, column=4)
+        
         self.updateGUIVariables()
+        
+    def randomize(self):
+        try:
+            conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            conn.connect((self.ip, self.port))
+            try:
+                packet = Serialization.pack(PacketTypes.CREATION_RANDOMIZE, None)
+                conn.send(packet)
+                data = conn.recv(self.PacketSize)
+                if data:
+                    data = Serialization.deserialize(data)
+                    messageType = data["message"]
+                    if(messageType == PacketTypes.CREATION_RANDOMIZE):
+                        stats = data["data"]
+                        self.hero.strength = stats[0]
+                        self.hero.constitution = stats[1]
+                        self.hero.dexterity = stats[2]
+                        self.hero.agility = stats[3]
+                        self.hero.intelligence = stats[4]
+                        self.hero.wisdom = stats[5]
+                        self.hero.rebuildStats()
+                        self.updateGUIVariables()
+            except:
+                conn.close()
+        except:
+            pass        
         
     def hoverStrength(self, event):
         self.description.configure(text = "Strength : A measure of ones physical strength. Increases physical damage and slightly increases max health")

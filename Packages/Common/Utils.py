@@ -63,6 +63,7 @@ class PacketTypes:
     CREATION_PACKETS = (50, 55)
     CREATION_RACES = 50
     CREATION_CLASSES = 51
+    CREATION_RANDOMIZE = 52
     
 
 def sendPacketToClient(client, message, data):
