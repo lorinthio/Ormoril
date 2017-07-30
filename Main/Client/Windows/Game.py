@@ -2,7 +2,7 @@ from Tkinter import *
 from ttk import Progressbar, Style
 from Commands import enterChatVar
 from Common.WindowHelpers import setupGrid
-from Objects import Player, Hero
+from Common.Objects import Player, Hero
 from Client import ClientConnection
 import Common.Serialization as Serialization
 

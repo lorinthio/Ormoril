@@ -56,5 +56,8 @@ RUN CLIENT
 
 0.3
 - Social
+- Staff Ranks - Moderator / Game Master
+- Permissions System
+- Permission Based Commands - yaml - permissions.yml - Groups: Users: etc
 - Friends List - See online/offline friends
 - Direct Messages - Individual windows to allow for player <-> player chat

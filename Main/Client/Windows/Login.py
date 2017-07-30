@@ -2,7 +2,7 @@ from Tkinter import *
 from Commands import enterChatVar
 from Common.WindowHelpers import setupGrid, centerWindow, makeNotification
 from Common.Utils import PacketTypes
-from Objects import Player
+from Common.Objects import Player
 from Client import Config
 import cPickle as pickle
 import socket

@@ -1,5 +1,5 @@
 # Import from other libraries
-from Objects import Player
+from Common.Objects import Player
 from Windows.Login import login
 from Windows.Game import start
 
