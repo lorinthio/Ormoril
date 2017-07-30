@@ -1,4 +1,4 @@
-from Common.Utils import PacketTypes
+from Common.Utils import PacketTypes, sendPacketToClient
 import Common.Serialization as Serialization
 import Errors
 
@@ -80,7 +80,3 @@ class AccountPacketHandler:
                 sendPacketToClient(client, PacketTypes.LOGIN_ATTEMPT_RESPONSE, {"success": False})           
         else:
             sendPacketToClient(client, PacketTypes.LOGIN_ATTEMPT_RESPONSE, {"success": False})
-            
-def sendPacketToClient(client, message, data):
-    packet = Serialization.pack(message, data)
-    client.send(packet)     

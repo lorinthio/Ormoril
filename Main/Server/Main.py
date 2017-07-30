@@ -2,8 +2,10 @@ from threading import Thread
 from Database import DatabaseService
 from PacketHandlers.AccountPacketHandler import AccountPacketHandler
 from PacketHandlers.PlayerPacketHandler import PlayerPacketHandler
+from PacketHandlers.CreationPacketHandler import CreationPacketHandler
 from Client import ClientConnection
-from ModLoader import ModLoader
+from Common.ModLoader import ModLoader
+from Common.Utils import PacketTypes
 import Common.Serialization as Serialization
 import socket
 
@@ -14,6 +16,7 @@ class Server:
         self.modLoader = ModLoader()
         self.dbService = DatabaseService()
         self.accountPacketHandler = AccountPacketHandler(self, self.dbService)
+        self.creationPacketHandler = CreationPacketHandler(self, self.dbService)
         self.playerPacketHandler = PlayerPacketHandler(self, self.dbService)
         self.currentID = 0
         self.playerCount = 0
@@ -34,9 +37,14 @@ class Server:
         
     def handleClientConnection(self, client, address):
         try:
-            packet = client.recv(1024)
-            data = Serialization.deserialize(packet)
-            self.accountPacketHandler.handlePacket(data, client)
+            while True:
+                packet = client.recv(1024)
+                data = Serialization.deserialize(packet)
+                msg = data["message"]
+                if PacketTypes.LOGIN_PACKETS[0] <= msg and msg <= PacketTypes.ACCOUNT_PACKETS[1]:
+                    self.accountPacketHandler.handlePacket(data, client)
+                elif PacketTypes.CREATION_PACKETS[0] <= msg and msg <= PacketTypes.CREATION_PACKETS[1]:
+                    self.creationPacketHandler.handlePacket(data, client)
         except:
             pass
             

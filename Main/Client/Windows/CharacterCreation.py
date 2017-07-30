@@ -1,32 +1,94 @@
 from Tkinter import *
 from Common.WindowHelpers import setupGrid
+from Common.Utils import PacketTypes
+from Common.Objects import Hero
+import Common.Serialization as Serialization
+import socket
 
 class CharacterCreationWindow(Frame):
     
     def __init__(self, master=None):
         Frame.__init__(self, master)
+        self.ip = "localhost"
+        self.port = 8123
+        self.PacketSize = 1024
+        self.hero = Hero()
+        self.pullRacesAndClasses()
         self.setupVariables()
+        self.initializeHero()
         self.makeWindow()
         
+    def pullRacesAndClasses(self):
+        try:
+            conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            conn.connect((self.ip, self.port))
+            try:
+                packet = Serialization.pack(PacketTypes.CREATION_CLASSES, None)
+                conn.send(packet)
+                data = conn.recv(self.PacketSize)
+                if data:
+                    data = Serialization.deserialize(data)
+                    messageType = data["message"]
+                    if(messageType == PacketTypes.CREATION_CLASSES):
+                        self.classes = data["data"]
+                        
+                packet = Serialization.pack(PacketTypes.CREATION_RACES, None)
+                conn.send(packet)
+                data = conn.recv(self.PacketSize)
+                if data:
+                    data = Serialization.deserialize(data)
+                    messageType = data["message"]
+                    if(messageType == PacketTypes.CREATION_RACES):
+                        self.races = data["data"]
+            except:
+                conn.close()
+        except:
+            pass
+        
     def setupVariables(self):
-        self.setupRaces()
-        return
-    
-    def setupRaces(self):
-        self.races = {"Human", "Elf", "Dwarf", "Planetouched", "Blackblood"}
-        self.classes = { "Warrior", "Rogue", "Magician" }
         self.raceVar = StringVar()
-        self.raceVar.set("Human")
         self.raceVar.trace("w", self.raceChanged)
         self.classVar = StringVar()
-        self.classVar.set("Warrior")
         self.classVar.trace("w", self.classChanged)
     
     def raceChanged(self, *args):
-        print "Current Race: {}".format(self.raceVar.get())
+        newRace = self.races[self.raceVar.get()]
+        self.hero.Race = newRace
+        self.hero.rebuildStats()
+        self.updateGUIVariables()
     
     def classChanged(self, *args):
-        print "Current Class: {}".format(self.classVar.get())
+        newClass = self.classes[self.classVar.get()]
+        self.hero.Class = newClass
+        self.hero.rebuildStats()
+        self.updateGUIVariables()
+    
+    def updateGUIVariables(self):
+        self.strengthVar.set(self.hero.stats["strength"])
+        self.constitutionVar.set(self.hero.stats["constitution"])
+        self.dexterityVar.set(self.hero.stats["dexterity"])
+        self.agiltyVar.set(self.hero.stats["agility"])
+        self.intelligenceVar.set(self.hero.stats["intelligence"])
+        self.wisdomVar.set(self.hero.stats["wisdom"])        
+    
+    def initializeHero(self):
+        self.strengthVar = IntVar()
+        self.constitutionVar = IntVar()
+        self.dexterityVar = IntVar()
+        self.agiltyVar = IntVar()
+        self.wisdomVar = IntVar()
+        self.intelligenceVar = IntVar()        
+        
+        firstRace = self.races.itervalues().next()
+        firstClass = self.classes.itervalues().next()
+        
+        self.hero.Race = firstRace
+        self.hero.Class = firstClass
+        
+        self.raceVar.set(firstRace.name)
+        self.classVar.set(firstClass.name)
+        
+        self.updateGUIVariables()
     
     def makeWindow(self):
         self.master.minsize(500, 400)
@@ -44,44 +106,44 @@ class CharacterCreationWindow(Frame):
         
         # Race
         Label(self.master, text="Race : ", font=("Helvetica", 14)).grid(row=1, column=1, sticky=E)
-        OptionMenu(self.master, self.raceVar, *self.races).grid(row=1, column=2, columnspan=2, sticky=W+E)
+        OptionMenu(self.master, self.raceVar, *self.races.keys()).grid(row=1, column=2, columnspan=2, sticky=W+E)
         
         # Class
         Label(self.master, text="Class : ", font=("Helvetica", 14)).grid(row=1, column=5, sticky=E)
-        OptionMenu(self.master, self.classVar, *self.classes).grid(row=1, column=6, columnspan=2, sticky=W+E)
+        OptionMenu(self.master, self.classVar, *self.classes.keys()).grid(row=1, column=6, columnspan=2, sticky=W+E)
         
         # Stats
         strength = Label(self.master, text="STR : ", font=("Helvetica",14))
         strength.grid(row=2, column=2, sticky=E)
         #strength.bind('<ENTER>', self.hoverStrength)
-        Label(self.master, text="10", relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=2, column=3, sticky=W)
+        Label(self.master, textvariable=self.strengthVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=2, column=3, sticky=W)
         
         constitution = Label(self.master, text="CON : ", font=("Helvetica",14))
         constitution.grid(row=2, column=5, sticky=E)
         #constitution.bind("ENTER", self.hoverConstitution)
-        Label(self.master, text="10", relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=2, column=6, sticky=W)
+        Label(self.master, textvariable=self.constitutionVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=2, column=6, sticky=W)
     
         dexterity = Label(self.master, text="DEX : ", font=("Helvetica",14))
         dexterity.grid(row=3, column=2, sticky=E)
         #dexterity.bind("ENTER", self.hoverDexterity)
-        Label(self.master, text="10", relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=3, column=3, sticky=W)
+        Label(self.master, textvariable=self.dexterityVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=3, column=3, sticky=W)
     
         agility = Label(self.master, text="AGI : ", font=("Helvetica",14))
         agility.grid(row=3, column=5, sticky=E)
         #agility.bind("ENTER", self.hoverAgility)
-        Label(self.master, text="10", relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=3, column=6, sticky=W)
+        Label(self.master, textvariable=self.agiltyVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=3, column=6, sticky=W)
     
         intelligence = Label(self.master, text="INT : ", font=("Helvetica",14))
         intelligence.grid(row=4, column=2, sticky=E)
         #intelligence.bind("ENTER", self.hoverIntelligence)
-        Label(self.master, text="10", relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=4, column=3, sticky=W)
+        Label(self.master, textvariable=self.intelligenceVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=4, column=3, sticky=W)
     
         wisdom = Label(self.master, text="WIS : ", font=("Helvetica",14))
         wisdom.grid(row=4, column=5, sticky=E)
         #wisdom.bind("ENTER", self.hoverWisdom)
-        Label(self.master, text="10", relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=4, column=6, sticky=W)        
+        Label(self.master, textvariable=self.wisdomVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=4, column=6, sticky=W)        
         
-        
+        self.updateGUIVariables()
         
     def hoverStrength(self, event):
         self.description.configure(text = "Strength : A measure of ones physical strength. Increases physical damage and slightly increases max health")

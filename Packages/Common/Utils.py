@@ -1,3 +1,5 @@
+import Serialization as Serialization
+
 class PacketTypes:
     
     # Common
@@ -6,29 +8,30 @@ class PacketTypes:
     ###################
     ##    Login
     ###################
-    LOGIN_PACKETS = (5, 9)
+    LOGIN_PACKETS = (5, 10)
     # Client
-    LOGIN = 5
-    LOGIN_ATTEMPT_CONNECT = 6
+    PLAYER_COUNT = 5
+    LOGIN = 6
+    LOGIN_ATTEMPT_CONNECT = 7
     # Server
-    LOGIN_SUCCESS = 7
-    LOGIN_FAILURE = 8
-    LOGIN_ATTEMPT_RESPONSE = 9
+    LOGIN_SUCCESS = 8
+    LOGIN_FAILURE = 9
+    LOGIN_ATTEMPT_RESPONSE = 10
     
     ###################
     ##    Account 
     ###################
-    ACCOUNT_PACKETS = (10,19)
+    ACCOUNT_PACKETS = (11,19)
     # Client
-    ACCOUNT_CREATE = 10
+    ACCOUNT_CREATE = 11
     # Server
-    ACCOUNT_CREATE_SUCCESS = 11
-    ACCOUNT_CREATE_FAILURE_INVALID_USERNAME = 12
-    ACCOUNT_CREATE_FAILURE_INVALID_PASSWORD = 13
-    ACCOUNT_CREATE_FAILURE_INVALID_EMAIL = 14
-    ACCOUNT_CREATE_FAILURE_EMAIL_EXISTS = 15
-    ACCOUNT_CREATE_FAILURE_USERNAME_EXISTS = 16
-    ACCOUNT_CREATE_FAILURE_ACCOUNT_EXISTS = 17
+    ACCOUNT_CREATE_SUCCESS = 12
+    ACCOUNT_CREATE_FAILURE_INVALID_USERNAME = 13
+    ACCOUNT_CREATE_FAILURE_INVALID_PASSWORD = 14
+    ACCOUNT_CREATE_FAILURE_INVALID_EMAIL = 15
+    ACCOUNT_CREATE_FAILURE_EMAIL_EXISTS = 16
+    ACCOUNT_CREATE_FAILURE_USERNAME_EXISTS = 17
+    ACCOUNT_CREATE_FAILURE_ACCOUNT_EXISTS = 18
     
     ###################
     ##    Character 
@@ -48,11 +51,23 @@ class PacketTypes:
     ##    Social 
     ###################
     # Server
-    PLAYER_COUNT = 40
-    PLAYER_ONLINE = 41
-    PLAYER_OFFLINE = 42
-    CHARACTER_ONLINE = 43
-    CHARACTER_OFFLINE = 44
+    PLAYER_ONLINE = 40
+    PLAYER_OFFLINE = 41
+    CHARACTER_ONLINE = 42
+    CHARACTER_OFFLINE = 43
+    
+    ###################
+    ##    Creation 
+    ###################
+    # Server
+    CREATION_PACKETS = (50, 55)
+    CREATION_RACES = 50
+    CREATION_CLASSES = 51
+    
+
+def sendPacketToClient(client, message, data):
+    packet = Serialization.pack(message, data)
+    client.send(packet)  
 
 def toSqlString(value):
     return "'" + str(value) + "'"

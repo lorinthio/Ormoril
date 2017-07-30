@@ -11,37 +11,40 @@ class Player:
         self.isLoggedIn = False
         self.character = None
         
+class Class:
+    
+    def __init__(self, name="", abilities={}):
+        self.name = name
+        self.abilities = abilities
+        
+    def applyToHero(self, hero):
+        hero.Class = self
+        heroAbilities = hero.abilities
+        for level, abilities in self.abilities:
+            if level in heroAbilities:
+                for ability in abilities:
+                    if ability not in heroAbilities[level]:
+                        heroAbilities[level].append(ability)
+            else:
+                heroAbilities[level] = abilities
+        
 class Race:
         
-    def __init__(self, **kwargs):
-        self.setupVariables(kwargs)
-        self.handleKeywords(kwargs)
+    def __init__(self, name="", abilities={}, **kwargs):
+        self.name = name
+        self.abilities = abilities
+        self.setupVariables()
+        self.handleKeywords(**kwargs)
         
     def setupVariables(self):
-        self.maxhealth = 0
-        self.maxmana = 0
-    
         self.strength = 0 # melee damage
         self.constitution = 0 # health / physical defense
         self.dexterity = 0 # accuracy / crit
         self.agility = 0 # dodge / crit
         self.wisdom = 0 # mana / magic defense
         self.intelligence = 0 # magic damage
-    
-        self.pAttack = 0
-        self.pDefense = 0
-    
-        self.mAttack = 0
-        self.mDefense = 0
-    
-        self.accuracy = 0
-        self.dodge = 0
         
-    def handleKeywords(self):
-        if "maxhealth" in kwargs:
-            self.maxhealth = kwargs["maxhealth"]
-        if "maxmana" in kwargs:
-            self.maxmana = kwargs["maxmana"]
+    def handleKeywords(self, **kwargs):
         if "strength" in kwargs:
             self.strength = kwargs["strength"]
         if "constitution" in kwargs:
@@ -54,27 +57,10 @@ class Race:
             self.wisdom = kwargs["wisdom"]
         if "intelligence" in kwargs:
             self.intelligence = kwargs["intelligence"]
-    
-        if "pAttack" in kwargs:
-            self.pAttack = kwargs["pAttack"]
-        if "pDefense" in kwargs:
-            self.pDefense = kwargs["pDefense"]
-            
-        if "mAttack" in kwargs:
-            self.mAttack = kwargs["mAttack"]
-        if "mDefense" in kwargs:
-            self.mDefense = kwargs["mDefense"]
-            
-        if "accuracy" in kwargs:
-            self.accuracy = kwargs["accuracy"]
-        if "dodge" in kwargs:
-            self.dodge = kwargs["dodge"]
         
         
     def applyToHero(self, hero):
-        hero.race = self
-        hero.stats["maxhealth"] = hero.maxhealth + self.maxhealth
-        hero.stats["maxmana"] = hero.maxmana + self.maxmana
+        hero.Race = self
         
         hero.stats["strength"] = hero.strength + self.strength
         hero.stats["constitution"] = hero.constitution + self.constitution
@@ -83,14 +69,14 @@ class Race:
         hero.stats["wisdom"] = hero.wisdom + self.wisdom
         hero.stats["intelligence"] = hero.intelligence + self.intelligence
         
-        hero.stats["pAttack"] = hero.pAttack + self.pAttack
-        hero.stats["pDefense"] = hero.pDefense + self.pDefense   
-    
-        hero.stats["mAttack"] = hero.mAttack + self.mAttack
-        hero.stats["mDefense"] = hero.mDefense + self.mDefense
-    
-        hero.stats["accuracy"] = hero.accuracy + self.accuracy
-        hero.stats["dodge"] = hero.dodge + self.dodge        
+        heroAbilities = hero.abilities
+        for level, abilities in self.abilities:
+            if level in heroAbilities:
+                for ability in abilities:
+                    if ability not in heroAbilities[level]:
+                        heroAbilities[level].append(ability)
+            else:
+                heroAbilities[level] = abilities        
         
 class Hero:
     
@@ -99,7 +85,9 @@ class Hero:
         
     def setupVariables(self):
         self.name = ""
-        self.race = None # Race Object
+        self.abilities = {}
+        self.Race = None
+        self.Class = None
         
         # stats is a dictionary of currently active values where race, base stats, and equipment is combined into one single location
         self.stats = {
@@ -148,3 +136,15 @@ class Hero:
         self.accuracy = 100
         self.dodge = 5
         
+    def rebuildStats(self):
+        self.stats["strength"] = self.strength
+        self.stats["constitution"] = self.constitution
+        self.stats["dexterity"] = self.dexterity
+        self.stats["agility"] = self.agility
+        self.stats["wisdom"] = self.wisdom
+        self.stats["intelligence"] = self.intelligence
+        
+        if self.Race:
+            self.Race.applyToHero(self)
+        if self.Class:
+            self.Class.applyToHero(self)

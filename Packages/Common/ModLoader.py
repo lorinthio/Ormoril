@@ -1,41 +1,41 @@
 class ModLoader:
 
-    abilities = []    
-    classes = []
-    creatures = []
-    npcs = []
-    quests = []
-    races = []
+    abilities = {}
+    classes = {}
+    creatures = {}
+    npcs = {}
+    quests = {}
+    races = {}
     rooms = []
     
     def __init__(self):
-        self.loadAbilities()
-        self.loadClasses()
-        self.loadCreatures()
-        self.loadNpcs()
-        self.loadQuests()
-        self.loadRaces()
-        self.loadRooms()
+        self._loadAbilities()
+        self._loadClasses()
+        self._loadCreatures()
+        self._loadNpcs()
+        self._loadQuests()
+        self._loadRaces()
+        self._loadRooms()
         
-    def loadAbilities(self):
+    def _loadAbilities(self):
         from Mods.Abilities import *
         
-    def loadClasses(self):
+    def _loadClasses(self):
         from Mods.Classes import *
         
-    def loadCreatures(self):
+    def _loadCreatures(self):
         from Mods.Creatures import *
         
-    def loadNpcs(self):
+    def _loadNpcs(self):
         from Mods.Npcs import *
         
-    def loadQuests(self):
+    def _loadQuests(self):
         from Mods.Quests import *
         
-    def loadRaces(self):
+    def _loadRaces(self):
         from Mods.Races import *
         
-    def loadRooms(self):
+    def _loadRooms(self):
         from Mods.Rooms import *
         
     @staticmethod
@@ -44,7 +44,8 @@ class ModLoader:
         
     @staticmethod
     def loadClass(Class):
-        ModLoader.classes.append(Class)
+        ModLoader.classes[Class.name] = Class
+        print "Loaded Class : " + Class.name
         
     @staticmethod
     def loadCreature(Creature):
@@ -60,7 +61,8 @@ class ModLoader:
         
     @staticmethod
     def loadRace(Race):
-        ModLoader.races.append(Race)
+        ModLoader.races[Race.name] = Race
+        print "Loaded Race : " + Race.name
         
     @staticmethod
     def loadRoom(Room):
