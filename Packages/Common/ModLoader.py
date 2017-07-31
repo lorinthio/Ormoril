@@ -1,12 +1,14 @@
+from collections import OrderedDict
+
 class ModLoader:
 
-    abilities = {}
-    classes = {}
-    creatures = {}
-    npcs = {}
-    quests = {}
-    races = {}
-    rooms = []
+    abilities = OrderedDict()
+    classes = OrderedDict()
+    creatures = OrderedDict()
+    npcs = OrderedDict()
+    quests = OrderedDict()
+    races = OrderedDict()
+    rooms = OrderedDict()
     
     def __init__(self):
         self._loadAbilities()

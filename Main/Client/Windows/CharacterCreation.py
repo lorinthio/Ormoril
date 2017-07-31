@@ -12,13 +12,15 @@ class CharacterCreationWindow(Frame):
         self.ip = "localhost"
         self.port = 8123
         self.PacketSize = 1024
-        self.hero = Hero()
         self.pullRacesAndClasses()
         self.setupVariables()
-        self.initializeHero()
+        if self.races and self.classes:
+            self.initializeHero()
         self.makeWindow()
         
     def pullRacesAndClasses(self):
+        self.races = None
+        self.classes = None
         try:
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             conn.connect((self.ip, self.port))
@@ -34,18 +36,28 @@ class CharacterCreationWindow(Frame):
                         
                 packet = Serialization.pack(PacketTypes.CREATION_RACES, None)
                 conn.send(packet)
-                data = conn.recv(self.PacketSize)
+                data = conn.recv(2048)
                 if data:
                     data = Serialization.deserialize(data)
                     messageType = data["message"]
                     if(messageType == PacketTypes.CREATION_RACES):
                         self.races = data["data"]
-            except:
+            except Exception, e:
+                print e.message
                 conn.close()
         except:
             pass
         
     def setupVariables(self):
+        self.hero = Hero()
+        
+        self.strengthVar = IntVar()
+        self.constitutionVar = IntVar()
+        self.dexterityVar = IntVar()
+        self.agiltyVar = IntVar()
+        self.wisdomVar = IntVar()
+        self.intelligenceVar = IntVar()        
+        
         self.raceVar = StringVar()
         self.raceVar.trace("w", self.raceChanged)
         self.classVar = StringVar()
@@ -72,13 +84,6 @@ class CharacterCreationWindow(Frame):
         self.wisdomVar.set(self.hero.stats["wisdom"])        
     
     def initializeHero(self):
-        self.strengthVar = IntVar()
-        self.constitutionVar = IntVar()
-        self.dexterityVar = IntVar()
-        self.agiltyVar = IntVar()
-        self.wisdomVar = IntVar()
-        self.intelligenceVar = IntVar()
-        
         firstRace = self.races.itervalues().next()
         firstClass = self.classes.itervalues().next()
         
@@ -94,6 +99,9 @@ class CharacterCreationWindow(Frame):
         self.master.minsize(500, 400)
         self.master.maxsize(500, 400)
         
+        self.master.iconbitmap(r'icon.ico')
+        self.master.title("Character Creation")
+        
         x = 9
         y = 6
         setupGrid(self.master, x, y)
@@ -105,12 +113,14 @@ class CharacterCreationWindow(Frame):
         #########
         
         # Race
-        Label(self.master, text="Race : ", font=("Helvetica", 14)).grid(row=1, column=1, sticky=E)
-        OptionMenu(self.master, self.raceVar, *self.races.keys()).grid(row=1, column=2, columnspan=2, sticky=W+E)
+        if self.races:
+            Label(self.master, text="Race : ", font=("Helvetica", 14)).grid(row=1, column=1, sticky=E)
+            OptionMenu(self.master, self.raceVar, *self.races.keys()).grid(row=1, column=2, columnspan=2, sticky=W+E)
         
         # Class
-        Label(self.master, text="Class : ", font=("Helvetica", 14)).grid(row=1, column=5, sticky=E)
-        OptionMenu(self.master, self.classVar, *self.classes.keys()).grid(row=1, column=6, columnspan=2, sticky=W+E)
+        if self.classes:
+            Label(self.master, text="Class : ", font=("Helvetica", 14)).grid(row=1, column=5, sticky=E)
+            OptionMenu(self.master, self.classVar, *self.classes.keys()).grid(row=1, column=6, columnspan=2, sticky=W+E)
         
         # Stats
         strength = Label(self.master, text="STR : ", font=("Helvetica",14))

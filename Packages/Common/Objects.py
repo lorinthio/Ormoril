@@ -13,8 +13,9 @@ class Player:
         
 class Class:
     
-    def __init__(self, name="", abilities={}):
+    def __init__(self, name="", description="", abilities={}):
         self.name = name
+        self.description = description
         self.abilities = abilities
         
     def applyToHero(self, hero):
@@ -30,8 +31,9 @@ class Class:
         
 class Race:
         
-    def __init__(self, name="", abilities={}, **kwargs):
+    def __init__(self, name="", description="", abilities={}, **kwargs):
         self.name = name
+        self.description = description
         self.abilities = abilities
         self.setupVariables()
         self.handleKeywords(**kwargs)
