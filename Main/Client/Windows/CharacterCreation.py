@@ -16,6 +16,7 @@ class CharacterCreationWindow(Frame):
         self.setupVariables()
         if self.races and self.classes:
             self.initializeHero()
+            self.randomize()
         self.makeWindow()
         
     def pullRacesAndClasses(self):

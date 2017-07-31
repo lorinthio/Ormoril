@@ -24,7 +24,7 @@ class CreationPacketHandler:
         for i in range(6):
             stat = 0
             for i in range(4):
-                stat += randint(1, 6)
+                stat += randint(2, 5)
             stats.append(stat)
         
         sendPacketToClient(client, PacketTypes.CREATION_RANDOMIZE, stats)
