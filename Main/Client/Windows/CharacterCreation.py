@@ -1,4 +1,5 @@
 from Tkinter import *
+import Tkconstants as constants
 import Tkinter as tk
 from Common.WindowHelpers import setupGrid
 from Common.Utils import PacketTypes
@@ -58,7 +59,9 @@ class CharacterCreationWindow(Frame):
         self.dexterityVar = IntVar()
         self.agiltyVar = IntVar()
         self.wisdomVar = IntVar()
-        self.intelligenceVar = IntVar()        
+        self.intelligenceVar = IntVar()  
+        
+        self.strengthCoords = None
         
         self.raceVar = StringVar()
         self.raceVar.trace("w", self.raceChanged)
@@ -87,8 +90,10 @@ class CharacterCreationWindow(Frame):
         self.intelligenceVar.set(self.hero.stats["intelligence"])
         self.wisdomVar.set(self.hero.stats["wisdom"])
         
-        self.raceDescriptionVar.set(self.hero.Race.description)
-        self.classDescriptionVar.set(self.hero.Class.description)
+        if(self.hero.Race):
+            self.raceDescriptionVar.set(self.hero.Race.description)
+        if(self.hero.Class):        
+            self.classDescriptionVar.set(self.hero.Class.description)
     
     def initializeHero(self):
         firstRace = self.races.itervalues().next()
@@ -103,70 +108,73 @@ class CharacterCreationWindow(Frame):
         self.updateGUIVariables()
     
     def makeWindow(self):
-        self.master.minsize(500, 400)
-        self.master.maxsize(500, 400)
+        width = 500
+        height = 400
+        self.master.minsize(width, height)
+        self.master.maxsize(width, height)
         self.master.iconbitmap(r'icon.ico')
         self.master.title("Character Creation")
         
-        x = 9
-        y = 7
-        setupGrid(self.master, x, y)
         # Title
-        Label(self.master, text="Character Creation", font=("Helvetica", 24)).grid(row=0, column=0, columnspan=x, sticky=N+E+S+W)
+        Label(self.master, text="Character Creation", font=("Helvetica", 24)).place(relx=0.5, y=20, anchor=CENTER)
         # Description
-        #self.description = Label(self.master, text="Hover over something for a description", font=("Helvetica", 10), relief=GROOVE)
-        #self.description.grid(row=y-1, column=0, columnspan=x, sticky=W+E+S)        
+        self.description = Label(self.master, text="Hover over something for a description", font=("Helvetica", 10), wraplength=400, relief=GROOVE)
+        self.description.place(relx=0.5, y=360, height=40, width=width, anchor=N)        
         #########
         
         # Race
         if self.races:
-            Label(self.master, text="Race : ", font=("Helvetica", 14)).grid(row=1, column=1, sticky=E)
-            OptionMenu(self.master, self.raceVar, *self.races.keys()).grid(row=1, column=2, columnspan=2, sticky=W+E)
+            Label(self.master, text="Race : ", font=("Helvetica", 14)).place(x=100, y=70, anchor=E)
+            OptionMenu(self.master, self.raceVar, *self.races.keys()).place(x=100, y=70, width=120, anchor=W)
             
-            Label(self.master, textvariable=self.raceDescriptionVar, font=("Helvetica", 12), wraplength=180, width=1, height=5, relief=SUNKEN).grid(row=2, column=1, columnspan=3, sticky=W+E)
+            Label(self.master, textvariable=self.raceDescriptionVar, font=("Helvetica", 12), wraplength=200, relief=SUNKEN).place(x=120, y=90, width=200, height=100, anchor=N)
         
         # Class
         if self.classes:
-            Label(self.master, text="Class : ", font=("Helvetica", 14)).grid(row=1, column=5, sticky=E)
-            OptionMenu(self.master, self.classVar, *self.classes.keys()).grid(row=1, column=6, columnspan=2, sticky=W+E)
+            Label(self.master, text="Class : ", font=("Helvetica", 14)).place(x=344, y=70, anchor=E)
+            OptionMenu(self.master, self.classVar, *self.classes.keys()).place(x=344, y=70, width=120, anchor=W)
             
-            Label(self.master, textvariable=self.classDescriptionVar, font=("Helvetica", 12), wraplength=180, width=1, height=5, relief=SUNKEN).grid(row=2, column=5, columnspan=3, sticky=W+E)
+            Label(self.master, textvariable=self.classDescriptionVar, font=("Helvetica", 12), wraplength=200, relief=SUNKEN).place(x=380, y=90, width=200, height=100, anchor=N)
             
         
         # Stats
         strength = Label(self.master, text="STR : ", font=("Helvetica",14))
-        strength.grid(row=3, column=2, sticky=E)
-        #strength.bind('<ENTER>', self.hoverStrength)
-        Label(self.master, textvariable=self.strengthVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=3, column=3, sticky=W)
+        strength.place(x=175, y=220, anchor=E)
+        strength.bind("<Enter>", self.hoverStrength)
+        Label(self.master, textvariable=self.strengthVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).place(x=175, y=220, width=30, anchor=W)
         
         constitution = Label(self.master, text="CON : ", font=("Helvetica",14))
-        constitution.grid(row=3, column=5, sticky=E)
-        #constitution.bind("ENTER", self.hoverConstitution)
-        Label(self.master, textvariable=self.constitutionVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=3, column=6, sticky=W)
+        constitution.place(x=350, y=220, anchor=E)
+        constitution.bind("<Enter>", self.hoverConstitution)
+        Label(self.master, textvariable=self.constitutionVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).place(x=350, y=220, width=30, anchor=W)
     
         dexterity = Label(self.master, text="DEX : ", font=("Helvetica",14))
-        dexterity.grid(row=4, column=2, sticky=E)
-        #dexterity.bind("ENTER", self.hoverDexterity)
-        Label(self.master, textvariable=self.dexterityVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=4, column=3, sticky=W)
+        dexterity.place(x=175, y=250, anchor=E)
+        dexterity.bind("<Enter>", self.hoverDexterity)
+        Label(self.master, textvariable=self.dexterityVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).place(x=175, y=250, width=30, anchor=W)
     
         agility = Label(self.master, text="AGI : ", font=("Helvetica",14))
-        agility.grid(row=4, column=5, sticky=E)
-        #agility.bind("ENTER", self.hoverAgility)
-        Label(self.master, textvariable=self.agiltyVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=4, column=6, sticky=W)
+        agility.place(x=350, y=250, anchor=E)
+        agility.bind("<Enter>", self.hoverAgility)
+        Label(self.master, textvariable=self.agiltyVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).place(x=350, y=250, width=30, anchor=W)
     
         intelligence = Label(self.master, text="INT : ", font=("Helvetica",14))
-        intelligence.grid(row=5, column=2, sticky=E)
-        #intelligence.bind("ENTER", self.hoverIntelligence)
-        Label(self.master, textvariable=self.intelligenceVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=5, column=3, sticky=W)
+        intelligence.place(x=175, y=280, anchor=E)
+        intelligence.bind("<Enter>", self.hoverIntelligence)
+        Label(self.master, textvariable=self.intelligenceVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).place(x=175, y=280, width=30, anchor=W)
     
         wisdom = Label(self.master, text="WIS : ", font=("Helvetica",14))
-        wisdom.grid(row=5, column=5, sticky=E)
-        #wisdom.bind("ENTER", self.hoverWisdom)
-        Label(self.master, textvariable=self.wisdomVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=5, column=6, sticky=W)        
+        wisdom.place(x=350, y=280, anchor=E)
+        wisdom.bind("<Enter>", self.hoverWisdom)
+        Label(self.master, textvariable=self.wisdomVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).place(x=350, y=280, width=30, anchor=W)       
         
-        Button(self.master, text="Randomize", command=self.randomize).grid(row=y-1, column=4)
+        Button(self.master, text="Roll", command=self.randomize).place(x=100, y=320, width=80, height=30, anchor=NE)
+        Button(self.master, text="Finish", command=self.finish).place(x=width-100, y=320, width=80, height=30, anchor=NW)
         
         self.updateGUIVariables()
+        
+    def enter(self, event):
+        print "Entered" + str(event)
         
     def randomize(self):
         try:
@@ -193,6 +201,9 @@ class CharacterCreationWindow(Frame):
                 conn.close()
         except:
             pass        
+        
+    def finish(self):
+        return
         
     def hoverStrength(self, event):
         self.description.configure(text = "Strength : A measure of ones physical strength. Increases physical damage and slightly increases max health")
