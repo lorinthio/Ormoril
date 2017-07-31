@@ -1,5 +1,5 @@
 from threading import Thread
-from Database import DatabaseService
+from Database.Database import DatabaseService
 from PacketHandlers.AccountPacketHandler import AccountPacketHandler
 from PacketHandlers.PlayerPacketHandler import PlayerPacketHandler
 from PacketHandlers.CreationPacketHandler import CreationPacketHandler
@@ -8,11 +8,12 @@ from Common.ModLoader import ModLoader
 from Common.Utils import PacketTypes
 import Common.Serialization as Serialization
 import socket
+import atexit
 
 class Server:
     
     def __init__(self):
-        self.players = []
+        self.players = {}
         self.modLoader = ModLoader()
         self.dbService = DatabaseService()
         self.accountPacketHandler = AccountPacketHandler(self, self.dbService)
@@ -23,12 +24,13 @@ class Server:
         self.config = Config()
         self.host = ""
         self.port = self.config.port
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.bind((self.host, self.port))
+        
         print "Server started on, {} on port {}".format("localhost", self.port)
         
     def listen(self):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.bind((self.host, self.port))        
         self.sock.listen(5)
         while True:
             client, address = self.sock.accept()
@@ -45,25 +47,33 @@ class Server:
                     self.accountPacketHandler.handlePacket(data, client)
                 elif PacketTypes.CREATION_PACKETS[0] <= msg and msg <= PacketTypes.CREATION_PACKETS[1]:
                     self.creationPacketHandler.handlePacket(data, client)
-        except:
-            pass
+        except Exception, e:
+            if e.message != "":
+                print e.message
+            
+    def close(self):
+        print "Server closed"
+        raw_input()
+        return
             
     def playerLogin(self, client, username):
         self.currentID += 1
         self.playerCount += 1
-        self.dbService.markPlayerOnline(username)
-        for player in self.players:
+        self.dbService.accountService.markPlayerOnline(username)
+        for username, player in self.players.iteritems():
             player.notifyPlayerLoggedOn(username)
-            
-        print "Players Online : {}".format(self.playerCount)
-        self.players.append(ClientConnection(self, self.playerPacketHandler, client, self.currentID, username))
+    
+        oldUser = self.players.pop(username, None)
+        if oldUser:
+            oldUser.close()
+        self.players[username] = ClientConnection(self, self.playerPacketHandler, client, self.currentID, username)
         
     def playerLogoff(self, player, username):
         self.playerCount -= 1
-        for player in self.players:
+        self.players.pop(username, None)
+        for username, player  in self.players.iteritems():
             player.notifyPlayerLoggedOff(username)
-        print "Players Online : {}".format(self.playerCount)
-        
+
 class Config:
     
     def __init__(self):
@@ -83,7 +93,9 @@ class Config:
                 print "in your config.txt"
         
 if __name__ == "__main__":
-    server = Server().listen()
+    server = Server()
+    atexit.register(server.close)
+    server.listen()
     print "Server Closed..."
     print "Hit enter to close this window"
     raw_input()

@@ -1,12 +1,12 @@
 from Common.Utils import PacketTypes, sendPacketToClient
 import Common.Serialization as Serialization
-import Errors
 
 class AccountPacketHandler:
     
     def __init__(self, Server, Database):
         self.server = Server
-        self.database = Database
+        self.service = Database.accountService
+        self.characterService = Database.characterService
     
     def handlePacket(self, packet, client):
         msg = packet["message"]
@@ -28,7 +28,7 @@ class AccountPacketHandler:
         username = data["username"]
         password = data["password"]
         
-        account = self.database.getAccountByName(username)
+        account = self.service.getAccountByName(username)
         if account:
             if username == account[1] and password == account[2]:
                 sendPacketToClient(client, PacketTypes.LOGIN_SUCCESS, None)
@@ -54,15 +54,15 @@ class AccountPacketHandler:
             # Email requires @
             sendPacketToClient(client, PacketTypes.ACCOUNT_CREATE_FAILURE_INVALID_EMAIL, None)
             return
-        elif self.database.getAccountByEmail(email):
+        elif self.service.getAccountByEmail(email):
             sendPacketToClient(client, PacketTypes.ACCOUNT_CREATE_FAILURE_EMAIL_EXISTS, None)
             return
-        elif self.database.getAccountByName(username):
+        elif self.service.getAccountByName(username):
             sendPacketToClient(client, PacketTypes.ACCOUNT_CREATE_FAILURE_USERNAME_EXISTS, None)
             return
         
         try:
-            self.database.createAccount(username, password, email)
+            self.service.createAccount(username, password, email)
             sendPacketToClient(client, PacketTypes.ACCOUNT_CREATE_SUCCESS, None)
         except Errors.AccountAlreadyExists:
             sendPacketToClient(client, PacketTypes.ACCOUNT_CREATE_FAILURE_ACCOUNT_EXISTS, None)
@@ -71,12 +71,14 @@ class AccountPacketHandler:
         username = data["username"]
         password = data["password"]
         
-        account = self.database.getAccountByName(username)
+        account = self.service.getAccountByName(username)
         if account:
             if username == account[1] and password == account[2]:
-                sendPacketToClient(client, PacketTypes.LOGIN_ATTEMPT_RESPONSE, {"success": True})
+                #self.database.
+                heroes = self.characterService.getPlayerHeroesByAccountId(account[0])
+                sendPacketToClient(client, PacketTypes.LOGIN_ATTEMPT_RESPONSE, {"success": True, "heroes": heroes, "forceToCreate": (len(heroes) == 0)})
                 self.server.playerLogin(client, username)
             else:
-                sendPacketToClient(client, PacketTypes.LOGIN_ATTEMPT_RESPONSE, {"success": False})           
+                sendPacketToClient(client, PacketTypes.LOGIN_ATTEMPT_RESPONSE, {"success": False})
         else:
             sendPacketToClient(client, PacketTypes.LOGIN_ATTEMPT_RESPONSE, {"success": False})

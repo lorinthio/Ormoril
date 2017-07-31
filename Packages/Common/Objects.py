@@ -9,8 +9,10 @@ class Player:
     def setupVariables(self):
         self.username = ""
         self.password = ""
+        self.needToCreate = False
         self.isLoggedIn = False
-        self.character = None
+        self.heroes = []
+        self.hero = None
         
 class Class:
     
@@ -95,6 +97,8 @@ class Hero:
         self.setupVariables()
         
     def setupVariables(self):
+        self.ID = 0
+        self.level = 1
         self.name = ""
         self.abilities = {}
         self.Race = None

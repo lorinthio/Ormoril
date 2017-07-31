@@ -7,56 +7,75 @@ import socket
 
 class ClientConnection:
     
-    def __init__(self, CharacterFrame):
-        self.setupVariables(CharacterFrame)
-        
-    def setupVariables(self, CharacterFrame):
-        self.stopped = False
-        self.connected = False
-        self.packetSize = 1024
-        self.characterPacketHandler = CharacterPacketHandler(self, CharacterFrame)
-        self.loadConfig()
+    stopped = False
+    connected = False
+    packetSize = 1024
+    config = None
+    characterPacketHandler = None
+    player = None
+    connection = None
     
-    def connect(self, username, password):
-        self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.conn.connect((self.config.ip, self.config.port))
+    activeWindow = None
+    
+    def __init__(self, player):
+        ClientConnection.loadConfig()
+        ClientConnection.player = player
+        ClientConnection.connect()
+    
+    @staticmethod
+    def setCharacterFrame(CharacterFrame):
+        characterPacketHandler = CharacterPacketHandler(self, CharacterFrame)
         
-        # Send Login Attempt Connect
-        
-        # If successful start threads
-        self.attemptConnect(username, password)
-        
-        if self.connected:
-            print "Client Connected!"
-            Thread(target=self.ping).start()
-            Thread(target=self.recieve).start()
+    @staticmethod
+    def setActiveWindow(window):
+        ClientConnection.activeWindow = window
+    
+    @staticmethod
+    def connect():
+        if not ClientConnection.connection:
+            ClientConnection.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            ClientConnection.connection.connect((ClientConnection.config.ip, ClientConnection.config.port))
+            
+            # If successful start threads
+            ClientConnection.attemptConnect()
+            
+            if ClientConnection.connected:
+                print "Client Connected!"
+                Thread(target=ClientConnection.ping).start()
+                Thread(target=ClientConnection.recieve).start()
 
-    def attemptConnect(self, username, password):
-        self.send(PacketTypes.LOGIN_ATTEMPT_CONNECT, {"username": username, "password": password})
-        packet = deserialize(self.conn.recv(self.packetSize))
+    @staticmethod
+    def attemptConnect():
+        ClientConnection.send(PacketTypes.LOGIN_ATTEMPT_CONNECT, {"username": ClientConnection.player.username, "password": ClientConnection.player.password})
+        packet = deserialize(ClientConnection.connection.recv(ClientConnection.packetSize))
         message = packet["message"]
         
         #Player Login Attempt
         if message == PacketTypes.LOGIN_ATTEMPT_RESPONSE:
             success = packet["data"]["success"]
             if success:
-                self.connected = True
+                ClientConnection.connected = True
+                ClientConnection.player.heroes = packet["data"]["heroes"]
+                ClientConnection.player.needToCreate = packet["data"]["forceToCreate"]
             else:
-                self.connected = False
-                exit()        
+                connected = False
 
-    def loadConfig(self):
-        self.config = Config()
+    @staticmethod
+    def loadConfig():
+        if not ClientConnection.config:
+            ClientConnection.config = Config()
 
-    def ping(self):
-        while not self.stopped:
-            self.send(PacketTypes.PING, None)
+    @staticmethod
+    def ping():
+        while not ClientConnection.stopped:
+            ClientConnection.send(PacketTypes.PING, None)
             sleep(3)
-            
-    def recieve(self):
-        while not self.stopped and self.conn:
+    
+    @staticmethod
+    def recieve():
+        while not ClientConnection.stopped and ClientConnection.connection:
             try:
-                packet = deserialize(self.conn.recv(self.packetSize))
+                packet = deserialize(ClientConnection.connection.recv(ClientConnection.packetSize))
                 if packet:
                     message = packet["message"]
                     
@@ -64,46 +83,55 @@ class ClientConnection:
                     if message == PacketTypes.LOGIN_ATTEMPT_RESPONSE:
                         success = packet["data"]["success"]
                         if success:
-                            self.connected = True
+                            ClientConnection.connected = True
                         else:
-                            self.connected = False
-                            exit()
-                    if PacketTypes.CHARACTER_PACKETS[0] <= message and message <= PacketTypes.CHARACTER_PACKETS[1]:
-                        self.characterPacketHandler.handlePacket(packet)
+                            ClientConnection.connected = False
+                    elif message == PacketTypes.FORCE_CLOSE:
+                        ClientConnection.disconnect()
+                    elif PacketTypes.CHARACTER_PACKETS[0] <= message and message <= PacketTypes.CHARACTER_PACKETS[1]:
+                        if ClientConnection.characterPacketHandler:
+                            ClientConnection.characterPacketHandler.handlePacket(packet)
             except:
-                self.disconnect()     
+                ClientConnection.disconnect()     
                 
-    def disconnect(self):
+    @staticmethod
+    def disconnect():
         print "Disconnect Called"
-        self.stopped = True
-        if self.conn:
-            self.conn.close()
-            self.conn = None    
+        ClientConnection.stopped = True
+        if ClientConnection.connection:
+            ClientConnection.connection.close()
+            ClientConnection.connection = None
+        if ClientConnection.activeWindow:
+            ClientConnection.activeWindow.destroy()
             
-    def send(self, message, data):
+    @staticmethod
+    def send(message, data):
         packet = pack(message, data)
-        if(self.conn):
-            self.conn.send(packet)     
+        if ClientConnection.connection:
+            ClientConnection.connection.send(packet)     
         
 class Config:
     
+    ip = None
+    port = None
+    
     def __init__(self):
-        self.ip = "localhost"
-        self.port = 8123
-        self.load()
+        Config.load()
         
-    def load(self):
-        configFile = open("config.txt", "r")
-        for line in configFile.readlines():
-            try:
-                line = line.lower()
-                if "ip" in line:
-                    self.ip = line.replace("ip:", "").strip()
-                elif "port" in line:
-                    self.port = int(line.replace("port:", "").strip())
-            except:
-                print "There was an issue with line,"
-                print " > " + line
-                print "in your config.txt"
-                
-        print "Client Config is pointing to, {} : {}".format(self.ip, self.port)
+    @staticmethod
+    def load():
+        if not Config.ip:
+            configFile = open("config.txt", "r")
+            for line in configFile.readlines():
+                try:
+                    line = line.lower()
+                    if "ip" in line:
+                        Config.ip = line.replace("ip:", "").strip()
+                    elif "port" in line:
+                        Config.port = int(line.replace("port:", "").strip())
+                except:
+                    print "There was an issue with line,"
+                    print " > " + line.strip()
+                    print "in your config.txt"
+                    
+            print "Client Config is pointing to, {} : {}".format(Config.ip, Config.port)

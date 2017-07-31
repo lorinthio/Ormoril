@@ -21,6 +21,7 @@ class ClientConnection:
         self.send(PacketTypes.PLAYER_OFFLINE, {"username": username})          
         
     def loop(self):
+        Thread(target=self.ping).start()
         print self.accountName + " has connected!"
         while self.client:
             try:
@@ -29,12 +30,23 @@ class ClientConnection:
                 self.packetHandler.handlePacket(data, self)
             except:
                 self.close()
-            
+    
+    def ping(self):
+        while True:
+            sleep(1.5)
+            self.send(PacketTypes.PING, None)
+            sleep(1.5)    
+                
     def close(self):
         print self.accountName + " has disconnected!"
-        self.client.close()
-        self.server.playerLogoff(self, self.accountName)
-        self.client = None
+        if self.client:
+            try:
+                self.server.playerLogoff(self, self.accountName)
+                self.client = None
+                self.send(PacketTypes.FORCE_CLOSE, None)
+                self.client.close()
+            except:
+                pass # Client closed connection
         
     def send(self, message, data):
         packet = Serialization.pack(message, data)

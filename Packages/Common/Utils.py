@@ -4,6 +4,7 @@ class PacketTypes:
     
     # Common
     PING = 0
+    FORCE_CLOSE = 1
     
     ###################
     ##    Login
@@ -64,6 +65,7 @@ class PacketTypes:
     CREATION_RACES = 50
     CREATION_CLASSES = 51
     CREATION_RANDOMIZE = 52
+    CREATION_FINAL = 53
     
 
 def sendPacketToClient(client, message, data):

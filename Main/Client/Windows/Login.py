@@ -56,6 +56,7 @@ class LoginWindow(Frame):
         Button(frame, command=self.attemptLogin, text="Login").grid(row=4, column=0)
         Button(frame, command=self.createAccountCreationWindow, text="Register").grid(row=4, column=1)
         centerWindow(self.master, width, height)
+        self.master.iconbitmap(r'icon.ico')
         
     def createAccountCreationWindow(self):
         if self.activeFrame:
@@ -64,6 +65,7 @@ class LoginWindow(Frame):
         height = 90
         
         frame = Frame(self.master)
+        self.master.iconbitmap(r'icon.ico')
         setupGrid(self.master, 2, 4)
         frame.grid(row=0, column=0, rowspan=4, columnspan=2)
         self.activeFrame = frame
@@ -202,7 +204,7 @@ class LoginWindow(Frame):
         
     def showAccountCreateSuccess(self):
         top = makeNotification("Account Creation Success!")
-        Message(top, text="You account was created successfully!", width=250).pack()
+        Message(top, text="Your account was created successfully!", width=250).pack()
         Button(top, text="Close", command=top.destroy).pack()
         
         self.createLoginWindow()

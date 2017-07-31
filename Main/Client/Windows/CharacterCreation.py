@@ -4,16 +4,18 @@ import Tkinter as tk
 from Common.WindowHelpers import setupGrid
 from Common.Utils import PacketTypes
 from Common.Objects import Hero
+from collections import OrderedDict
 import Common.Serialization as Serialization
 import socket
 
 class CharacterCreationWindow(Frame):
     
-    def __init__(self, master=None):
+    def __init__(self, player, master=None):
         Frame.__init__(self, master)
         self.ip = "localhost"
         self.port = 8123
         self.PacketSize = 1024
+        self.player = player
         self.pullRacesAndClasses()
         self.setupVariables()
         if self.races and self.classes:
@@ -21,9 +23,10 @@ class CharacterCreationWindow(Frame):
             self.randomize()
         self.makeWindow()
         
+        
     def pullRacesAndClasses(self):
-        self.races = None
-        self.classes = None
+        self.races = OrderedDict({})
+        self.classes = OrderedDict({})
         try:
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             conn.connect((self.ip, self.port))
@@ -35,7 +38,8 @@ class CharacterCreationWindow(Frame):
                     data = Serialization.deserialize(data)
                     messageType = data["message"]
                     if(messageType == PacketTypes.CREATION_CLASSES):
-                        self.classes = data["data"]
+                        for key, value in data["data"].iteritems():
+                            self.classes[key.title()] = value
                         
                 packet = Serialization.pack(PacketTypes.CREATION_RACES, None)
                 conn.send(packet)
@@ -44,9 +48,11 @@ class CharacterCreationWindow(Frame):
                     data = Serialization.deserialize(data)
                     messageType = data["message"]
                     if(messageType == PacketTypes.CREATION_RACES):
-                        self.races = data["data"]
+                        for key, value in data["data"].iteritems():
+                            self.races[key.title()] = value
             except Exception, e:
                 print e.message
+                print e
                 conn.close()
         except:
             pass
@@ -203,6 +209,7 @@ class CharacterCreationWindow(Frame):
             pass        
         
     def finish(self):
+        self.player.hero = self.hero
         return
         
     def hoverStrength(self, event):
@@ -222,9 +229,3 @@ class CharacterCreationWindow(Frame):
         
     def hoverIntelligence(self, event):
         self.description.configure(text = "Intelligence : A measure of ones magic. Increases magical damage and slightly increases maximum mana")
-        
-def startCreation():
-    CharacterCreationWindow().mainloop()
-    
-if __name__ == "__main__":
-    startCreation()

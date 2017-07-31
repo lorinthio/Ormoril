@@ -8,17 +8,18 @@ import Common.Serialization as Serialization
 
 class GameWindow(Frame):
     
-    def __init__(self, player, master=None):
+    def __init__(self, player, client, master=None):
         self.player = player
+        self.client = client
         Frame.__init__(self, master)
         setupGrid(self.master, 7, 6)
+        self.characterFrame = CharacterFrame(self.master)
         self.setupVariables()
         self.setupWindow()
         self.setupChatFrame()
-        self.characterFrame = CharacterFrame(self.master)
         self.entryBar()
         self.setupKeyBindings()
-        self.connect()
+        self.client.setCharacterFrame(self.characterFrame)
 
     def setupVariables(self):
         self.entryVar = StringVar()
@@ -28,7 +29,10 @@ class GameWindow(Frame):
         self.master.title("Text Based Adventure")
         self.master.maxsize(1366, 968)
         self.master.minsize(900,600)
+        self.master.iconbitmap(r'icon.ico')
         self.master["bg"] = "white"
+        
+        self.master.protocol("WM_DELETE_WINDOW", self.disconnect)
         
     def setupChatFrame(self):
         chatText = Text(self.master, wrap=WORD, state=DISABLED)
@@ -46,9 +50,7 @@ class GameWindow(Frame):
         Entry(self.master, textvariable=self.entryVar).grid(row=5, column=3, rowspan=1, columnspan=4, sticky=W+E+S)
         
     def connect(self):
-        self.client = ClientConnection(self.characterFrame)
-        self.client.connect(self.player.username, self.player.password)
-        self.master.protocol("WM_DELETE_WINDOW", self.disconnect)
+        self.client = ClientConnection(self.player, self.characterFrame)
         
     def disconnect(self):
         self.client.disconnect()
@@ -93,8 +95,3 @@ class CharacterFrame(Frame):
         
     def handleCharacterPacket(self, packet):
         return
-
-def start(player):
-    win = GameWindow(player)
-    win.mainloop()
-    
