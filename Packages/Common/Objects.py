@@ -18,6 +18,7 @@ class Class:
         self.name = name
         self.description = description
         self.abilities = abilities
+        self.modload()
         
     def applyToHero(self, hero):
         hero.Class = self
@@ -29,6 +30,9 @@ class Class:
                         heroAbilities[level].append(ability)
             else:
                 heroAbilities[level] = abilities
+                
+    def modload(self):
+        ModLoader.loadClass(self)    
         
 class Race:
         
