@@ -1,4 +1,5 @@
 from Tkinter import *
+import Tkinter as tk
 from Common.WindowHelpers import setupGrid
 from Common.Utils import PacketTypes
 from Common.Objects import Hero
@@ -61,8 +62,10 @@ class CharacterCreationWindow(Frame):
         
         self.raceVar = StringVar()
         self.raceVar.trace("w", self.raceChanged)
+        self.raceDescriptionVar = StringVar()
         self.classVar = StringVar()
         self.classVar.trace("w", self.classChanged)
+        self.classDescriptionVar = StringVar()
     
     def raceChanged(self, *args):
         newRace = self.races[self.raceVar.get()]
@@ -82,7 +85,10 @@ class CharacterCreationWindow(Frame):
         self.dexterityVar.set(self.hero.stats["dexterity"])
         self.agiltyVar.set(self.hero.stats["agility"])
         self.intelligenceVar.set(self.hero.stats["intelligence"])
-        self.wisdomVar.set(self.hero.stats["wisdom"])        
+        self.wisdomVar.set(self.hero.stats["wisdom"])
+        
+        self.raceDescriptionVar.set(self.hero.Race.description)
+        self.classDescriptionVar.set(self.hero.Class.description)
     
     def initializeHero(self):
         firstRace = self.races.itervalues().next()
@@ -99,12 +105,11 @@ class CharacterCreationWindow(Frame):
     def makeWindow(self):
         self.master.minsize(500, 400)
         self.master.maxsize(500, 400)
-        
         self.master.iconbitmap(r'icon.ico')
         self.master.title("Character Creation")
         
         x = 9
-        y = 6
+        y = 7
         setupGrid(self.master, x, y)
         # Title
         Label(self.master, text="Character Creation", font=("Helvetica", 24)).grid(row=0, column=0, columnspan=x, sticky=N+E+S+W)
@@ -117,44 +122,49 @@ class CharacterCreationWindow(Frame):
         if self.races:
             Label(self.master, text="Race : ", font=("Helvetica", 14)).grid(row=1, column=1, sticky=E)
             OptionMenu(self.master, self.raceVar, *self.races.keys()).grid(row=1, column=2, columnspan=2, sticky=W+E)
+            
+            Label(self.master, textvariable=self.raceDescriptionVar, font=("Helvetica", 12), wraplength=180, width=1, height=5, relief=SUNKEN).grid(row=2, column=1, columnspan=3, sticky=W+E)
         
         # Class
         if self.classes:
             Label(self.master, text="Class : ", font=("Helvetica", 14)).grid(row=1, column=5, sticky=E)
             OptionMenu(self.master, self.classVar, *self.classes.keys()).grid(row=1, column=6, columnspan=2, sticky=W+E)
+            
+            Label(self.master, textvariable=self.classDescriptionVar, font=("Helvetica", 12), wraplength=180, width=1, height=5, relief=SUNKEN).grid(row=2, column=5, columnspan=3, sticky=W+E)
+            
         
         # Stats
         strength = Label(self.master, text="STR : ", font=("Helvetica",14))
-        strength.grid(row=2, column=2, sticky=E)
+        strength.grid(row=3, column=2, sticky=E)
         #strength.bind('<ENTER>', self.hoverStrength)
-        Label(self.master, textvariable=self.strengthVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=2, column=3, sticky=W)
+        Label(self.master, textvariable=self.strengthVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=3, column=3, sticky=W)
         
         constitution = Label(self.master, text="CON : ", font=("Helvetica",14))
-        constitution.grid(row=2, column=5, sticky=E)
+        constitution.grid(row=3, column=5, sticky=E)
         #constitution.bind("ENTER", self.hoverConstitution)
-        Label(self.master, textvariable=self.constitutionVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=2, column=6, sticky=W)
+        Label(self.master, textvariable=self.constitutionVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=3, column=6, sticky=W)
     
         dexterity = Label(self.master, text="DEX : ", font=("Helvetica",14))
-        dexterity.grid(row=3, column=2, sticky=E)
+        dexterity.grid(row=4, column=2, sticky=E)
         #dexterity.bind("ENTER", self.hoverDexterity)
-        Label(self.master, textvariable=self.dexterityVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=3, column=3, sticky=W)
+        Label(self.master, textvariable=self.dexterityVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=4, column=3, sticky=W)
     
         agility = Label(self.master, text="AGI : ", font=("Helvetica",14))
-        agility.grid(row=3, column=5, sticky=E)
+        agility.grid(row=4, column=5, sticky=E)
         #agility.bind("ENTER", self.hoverAgility)
-        Label(self.master, textvariable=self.agiltyVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=3, column=6, sticky=W)
+        Label(self.master, textvariable=self.agiltyVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=4, column=6, sticky=W)
     
         intelligence = Label(self.master, text="INT : ", font=("Helvetica",14))
-        intelligence.grid(row=4, column=2, sticky=E)
+        intelligence.grid(row=5, column=2, sticky=E)
         #intelligence.bind("ENTER", self.hoverIntelligence)
-        Label(self.master, textvariable=self.intelligenceVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=4, column=3, sticky=W)
+        Label(self.master, textvariable=self.intelligenceVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=5, column=3, sticky=W)
     
         wisdom = Label(self.master, text="WIS : ", font=("Helvetica",14))
-        wisdom.grid(row=4, column=5, sticky=E)
+        wisdom.grid(row=5, column=5, sticky=E)
         #wisdom.bind("ENTER", self.hoverWisdom)
-        Label(self.master, textvariable=self.wisdomVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=4, column=6, sticky=W)        
+        Label(self.master, textvariable=self.wisdomVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).grid(row=5, column=6, sticky=W)        
         
-        Button(self.master, text="Randomize", command=self.randomize).grid(row=5, column=4)
+        Button(self.master, text="Randomize", command=self.randomize).grid(row=y-1, column=4)
         
         self.updateGUIVariables()
         

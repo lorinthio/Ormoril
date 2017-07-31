@@ -1,4 +1,5 @@
 from Tkinter import IntVar
+from ModLoader import ModLoader
 
 class Player:
     
@@ -37,6 +38,7 @@ class Race:
         self.abilities = abilities
         self.setupVariables()
         self.handleKeywords(**kwargs)
+        self.modload()
         
     def setupVariables(self):
         self.strength = 0 # melee damage
@@ -79,6 +81,9 @@ class Race:
                         heroAbilities[level].append(ability)
             else:
                 heroAbilities[level] = abilities        
+        
+    def modload(self):
+        ModLoader.loadRace(self)
         
 class Hero:
     
