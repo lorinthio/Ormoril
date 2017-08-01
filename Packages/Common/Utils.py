@@ -60,13 +60,15 @@ class PacketTypes:
     ###################
     ##    Creation 
     ###################
-    # Server
     CREATION_PACKETS = (50, 55)
+    # Client
     CREATION_RACES = 50
     CREATION_CLASSES = 51
     CREATION_RANDOMIZE = 52
     CREATION_FINAL = 53
-    
+    # Server
+    CREATION_INVALID = 54
+    CREATION_SUCCESS = 55
 
 def sendPacketToClient(client, message, data):
     packet = Serialization.pack(message, data)

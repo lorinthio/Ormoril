@@ -1,16 +1,13 @@
 from Tkinter import *
 from ttk import Progressbar, Style
-from Commands import enterChatVar
 from Common.WindowHelpers import setupGrid
 from Common.Objects import Player, Hero
-from Client import ClientConnection
 import Common.Serialization as Serialization
 
 class GameWindow(Frame):
     
-    def __init__(self, player, client, master=None):
+    def __init__(self, player, master=None):
         self.player = player
-        self.client = client
         Frame.__init__(self, master)
         setupGrid(self.master, 7, 6)
         self.characterFrame = CharacterFrame(self.master)
@@ -19,7 +16,6 @@ class GameWindow(Frame):
         self.setupChatFrame()
         self.entryBar()
         self.setupKeyBindings()
-        self.client.setCharacterFrame(self.characterFrame)
 
     def setupVariables(self):
         self.entryVar = StringVar()
@@ -31,8 +27,6 @@ class GameWindow(Frame):
         self.master.minsize(900,600)
         self.master.iconbitmap(r'icon.ico')
         self.master["bg"] = "white"
-        
-        self.master.protocol("WM_DELETE_WINDOW", self.disconnect)
         
     def setupChatFrame(self):
         chatText = Text(self.master, wrap=WORD, state=DISABLED)
@@ -48,13 +42,6 @@ class GameWindow(Frame):
         
     def entryBar(self):
         Entry(self.master, textvariable=self.entryVar).grid(row=5, column=3, rowspan=1, columnspan=4, sticky=W+E+S)
-        
-    def connect(self):
-        self.client = ClientConnection(self.player, self.characterFrame)
-        
-    def disconnect(self):
-        self.client.disconnect()
-        self.master.destroy()
 
 class CharacterFrame(Frame):
     

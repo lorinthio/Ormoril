@@ -67,7 +67,8 @@ class CharacterCreationWindow(Frame):
         self.wisdomVar = IntVar()
         self.intelligenceVar = IntVar()  
         
-        self.strengthCoords = None
+        self.allocationVar = StringVar()
+        self.pointsRemaining = 6
         
         self.raceVar = StringVar()
         self.raceVar.trace("w", self.raceChanged)
@@ -96,6 +97,8 @@ class CharacterCreationWindow(Frame):
         self.intelligenceVar.set(self.hero.stats["intelligence"])
         self.wisdomVar.set(self.hero.stats["wisdom"])
         
+        self.allocationVar.set("Points Remaining ( {} )".format(self.pointsRemaining))
+        
         if(self.hero.Race):
             self.raceDescriptionVar.set(self.hero.Race.description)
         if(self.hero.Class):        
@@ -121,63 +124,128 @@ class CharacterCreationWindow(Frame):
         self.master.iconbitmap(r'icon.ico')
         self.master.title("Character Creation")
         
+        backgroundColor = "Azure2"
+        self.plusminus = PhotoImage(file="plusminus.gif")
+        
+        Label(self.master, bg=backgroundColor).place(x=0, y=0, relwidth=1,relheight=1)
+        
         # Title
-        Label(self.master, text="Character Creation", font=("Helvetica", 24)).place(relx=0.5, y=20, anchor=CENTER)
+        Label(self.master, text="Character Creation", font=("Helvetica", 24), bg=backgroundColor).place(relx=0.5, y=20, anchor=CENTER)
         # Description
-        self.description = Label(self.master, text="Hover over something for a description", font=("Helvetica", 10), wraplength=400, relief=GROOVE)
-        self.description.place(relx=0.5, y=360, height=40, width=width, anchor=N)        
+        self.description = Label(self.master, text="Hover over something for a description", font=("Helvetica", 10), wraplength=400, relief=GROOVE, bg=backgroundColor)
+        self.description.place(relx=0.5, y=360, height=40, width=width, anchor=N)
         #########
         
         # Race
         if self.races:
-            Label(self.master, text="Race : ", font=("Helvetica", 14)).place(x=100, y=70, anchor=E)
+            Label(self.master, text="Race : ", font=("Helvetica", 14), bg=backgroundColor).place(x=100, y=70, anchor=E)
             OptionMenu(self.master, self.raceVar, *self.races.keys()).place(x=100, y=70, width=120, anchor=W)
             
-            Label(self.master, textvariable=self.raceDescriptionVar, font=("Helvetica", 12), wraplength=200, relief=SUNKEN).place(x=120, y=90, width=200, height=100, anchor=N)
+            Label(self.master, textvariable=self.raceDescriptionVar, font=("Helvetica", 12), wraplength=200, relief=SUNKEN, bg=backgroundColor).place(x=120, y=90, width=200, height=100, anchor=N)
         
         # Class
         if self.classes:
-            Label(self.master, text="Class : ", font=("Helvetica", 14)).place(x=344, y=70, anchor=E)
+            Label(self.master, text="Class : ", font=("Helvetica", 14), bg=backgroundColor).place(x=344, y=70, anchor=E)
             OptionMenu(self.master, self.classVar, *self.classes.keys()).place(x=344, y=70, width=120, anchor=W)
             
-            Label(self.master, textvariable=self.classDescriptionVar, font=("Helvetica", 12), wraplength=200, relief=SUNKEN).place(x=380, y=90, width=200, height=100, anchor=N)
+            Label(self.master, textvariable=self.classDescriptionVar, font=("Helvetica", 12), wraplength=200, relief=SUNKEN, bg=backgroundColor).place(x=380, y=90, width=200, height=100, anchor=N)
             
         
         # Stats
-        strength = Label(self.master, text="STR : ", font=("Helvetica",14))
-        strength.place(x=175, y=220, anchor=E)
+        strength = Label(self.master, text="STR : ", font=("Helvetica",14), bg=backgroundColor)
+        strength.place(x=150, y=220, anchor=E)
         strength.bind("<Enter>", self.hoverStrength)
-        Label(self.master, textvariable=self.strengthVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).place(x=175, y=220, width=30, anchor=W)
+        Label(self.master, textvariable=self.strengthVar, relief=SUNKEN, font=("Helvetica", 12), padx=5, bg=backgroundColor).place(x=150, y=220, width=30, anchor=W)
+        label = Label(self.master, image=self.plusminus)
+        label.place(x=200, y=220, width=28, height=28, anchor=CENTER)
+        label.bind("<Button-1>", lambda event, var=self.strengthVar, name="strength": self.leftclick(event, var, name))
+        label.bind("<Button-3>", lambda event, var=self.strengthVar, name="strength": self.rightclick(event, var, name))
+        label.bind("<Enter>", self.hoverPlusMinus)
         
-        constitution = Label(self.master, text="CON : ", font=("Helvetica",14))
+        constitution = Label(self.master, text="CON : ", font=("Helvetica",14), bg=backgroundColor)
         constitution.place(x=350, y=220, anchor=E)
         constitution.bind("<Enter>", self.hoverConstitution)
-        Label(self.master, textvariable=self.constitutionVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).place(x=350, y=220, width=30, anchor=W)
+        Label(self.master, textvariable=self.constitutionVar, relief=SUNKEN, font=("Helvetica", 12), padx=5, bg=backgroundColor).place(x=350, y=220, width=30, anchor=W)
+        label = Label(self.master, image=self.plusminus)
+        label.place(x=400, y=220, width=28, height=28, anchor=CENTER)
+        label.bind("<Button-1>", lambda event, var=self.constitutionVar, name="constitution": self.leftclick(event, var, name))
+        label.bind("<Button-3>", lambda event, var=self.constitutionVar, name="constitution": self.rightclick(event, var, name))
+        label.bind("<Enter>", self.hoverPlusMinus)
     
-        dexterity = Label(self.master, text="DEX : ", font=("Helvetica",14))
-        dexterity.place(x=175, y=250, anchor=E)
+        dexterity = Label(self.master, text="DEX : ", font=("Helvetica",14), bg=backgroundColor)
+        dexterity.place(x=150, y=250, anchor=E)
         dexterity.bind("<Enter>", self.hoverDexterity)
-        Label(self.master, textvariable=self.dexterityVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).place(x=175, y=250, width=30, anchor=W)
+        Label(self.master, textvariable=self.dexterityVar, relief=SUNKEN, font=("Helvetica", 12), padx=5, bg=backgroundColor).place(x=150, y=250, width=30, anchor=W)
+        label = Label(self.master, image=self.plusminus)
+        label.place(x=200, y=250, width=28, height=28, anchor=CENTER)
+        label.bind("<Button-1>", lambda event, var=self.dexterityVar, name="dexterity": self.leftclick(event, var, name))
+        label.bind("<Button-3>", lambda event, var=self.dexterityVar, name="dexterity": self.rightclick(event, var, name))
+        label.bind("<Enter>", self.hoverPlusMinus)
     
-        agility = Label(self.master, text="AGI : ", font=("Helvetica",14))
+        agility = Label(self.master, text="AGI : ", font=("Helvetica",14), bg=backgroundColor)
         agility.place(x=350, y=250, anchor=E)
         agility.bind("<Enter>", self.hoverAgility)
-        Label(self.master, textvariable=self.agiltyVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).place(x=350, y=250, width=30, anchor=W)
+        Label(self.master, textvariable=self.agiltyVar, relief=SUNKEN, font=("Helvetica", 12), padx=5, bg=backgroundColor).place(x=350, y=250, width=30, anchor=W)
+        label = Label(self.master, image=self.plusminus)
+        label.place(x=400, y=250, width=28, height=28, anchor=CENTER)
+        label.bind("<Button-1>", lambda event, var=self.agiltyVar, name="agility": self.leftclick(event, var, name))
+        label.bind("<Button-3>", lambda event, var=self.agiltyVar, name="agility": self.rightclick(event, var, name))
+        label.bind("<Enter>", self.hoverPlusMinus)
     
-        intelligence = Label(self.master, text="INT : ", font=("Helvetica",14))
-        intelligence.place(x=175, y=280, anchor=E)
+        intelligence = Label(self.master, text="INT : ", font=("Helvetica",14), bg=backgroundColor)
+        intelligence.place(x=150, y=280, anchor=E)
         intelligence.bind("<Enter>", self.hoverIntelligence)
-        Label(self.master, textvariable=self.intelligenceVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).place(x=175, y=280, width=30, anchor=W)
+        Label(self.master, textvariable=self.intelligenceVar, relief=SUNKEN, font=("Helvetica", 12), padx=5, bg=backgroundColor).place(x=150, y=280, width=30, anchor=W)
+        label = Label(self.master, image=self.plusminus)
+        label.place(x=200, y=280, width=28, height=28, anchor=CENTER)
+        label.bind("<Button-1>", lambda event, var=self.intelligenceVar, name="intelligence": self.leftclick(event, var, name))
+        label.bind("<Button-3>", lambda event, var=self.intelligenceVar, name="intelligence": self.rightclick(event, var, name))
+        label.bind("<Enter>", self.hoverPlusMinus)
     
-        wisdom = Label(self.master, text="WIS : ", font=("Helvetica",14))
+        wisdom = Label(self.master, text="WIS : ", font=("Helvetica",14), bg=backgroundColor)
         wisdom.place(x=350, y=280, anchor=E)
         wisdom.bind("<Enter>", self.hoverWisdom)
-        Label(self.master, textvariable=self.wisdomVar, relief=SUNKEN, font=("Helvetica", 12), padx=5).place(x=350, y=280, width=30, anchor=W)       
+        Label(self.master, textvariable=self.wisdomVar, relief=SUNKEN, font=("Helvetica", 12), padx=5, bg=backgroundColor).place(x=350, y=280, width=30, anchor=W)   
+        label = Label(self.master, image=self.plusminus)
+        label.place(x=400, y=280, width=28, height=28, anchor=CENTER)    
+        label.bind("<Button-1>", lambda event, var=self.wisdomVar, name="wisdom": self.leftclick(event, var, name))
+        label.bind("<Button-3>", lambda event, var=self.wisdomVar, name="wisdom": self.rightclick(event, var, name))
+        label.bind("<Enter>", self.hoverPlusMinus)
+        
+        Label(self.master, textvariable=self.allocationVar, font=("Helvetica", 12), padx=5, bg=backgroundColor).place(relx=0.5, y=320, anchor=CENTER)
         
         Button(self.master, text="Roll", command=self.randomize).place(x=100, y=320, width=80, height=30, anchor=NE)
         Button(self.master, text="Finish", command=self.finish).place(x=width-100, y=320, width=80, height=30, anchor=NW)
         
         self.updateGUIVariables()
+        
+    def leftclick(self, event, var, name):
+        augment = self.pointsRemaining > 0
+        
+        if augment:
+            var.set(var.get() + 1)
+            self.pointsRemaining -= 1
+            self.allocationVar.set("Points Remaining ( {} )".format(self.pointsRemaining))
+            
+    def rightclick(self, event, var, name):
+        augment = False
+        if(name == "strength"):
+            augment = var.get() > self.hero.stats["strength"]
+        if(name == "constitution"):
+            augment = var.get() > self.hero.stats["constitution"]
+        if(name == "dexterity"):
+            augment = var.get() > self.hero.stats["dexterity"]
+        if(name == "agility"):
+            augment = var.get() > self.hero.stats["agility"]
+        if(name == "intelligence"):
+            augment = var.get() > self.hero.stats["intelligence"]
+        if(name == "wisdom"):
+            augment = var.get() > self.hero.stats["wisdom"]
+        
+        if augment:
+            var.set(var.get()-1)
+            self.pointsRemaining += 1
+            self.allocationVar.set("Points Remaining ( {} )".format(self.pointsRemaining))
         
     def enter(self, event):
         print "Entered" + str(event)
@@ -187,7 +255,7 @@ class CharacterCreationWindow(Frame):
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             conn.connect((self.ip, self.port))
             try:
-                packet = Serialization.pack(PacketTypes.CREATION_RANDOMIZE, None)
+                packet = Serialization.pack(PacketTypes.CREATION_RANDOMIZE, { "username": self.player.username })
                 conn.send(packet)
                 data = conn.recv(self.PacketSize)
                 if data:
@@ -201,6 +269,9 @@ class CharacterCreationWindow(Frame):
                         self.hero.agility = stats[3]
                         self.hero.intelligence = stats[4]
                         self.hero.wisdom = stats[5]
+                        
+                        self.pointsRemaining = 6
+                        self.allocationVar.set("Points Remaining ( {} )".format(self.pointsRemaining))
                         self.hero.rebuildStats()
                         self.updateGUIVariables()
             except:
@@ -210,7 +281,30 @@ class CharacterCreationWindow(Frame):
         
     def finish(self):
         self.player.hero = self.hero
-        return
+        try:
+            conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            conn.connect((self.ip, self.port))
+            try:
+                print self.hero
+                packet = Serialization.pack(PacketTypes.CREATION_FINAL, { "username": self.player.username, "race": self.hero.Race.name, "class": self.hero.Class.name, "stats": [self.hero.strength, self.hero.constitution, self.hero.dexterity, self.hero.agility, self.hero.intelligence, self.hero.wisdom]})
+                conn.send(packet)
+                data = conn.recv(self.PacketSize)
+                if data:
+                    data = Serialization.deserialize(data)
+                    messageType = data["message"]
+                    if(messageType == PacketTypes.CREATION_SUCCESS):
+                        print "Creation Complete!"
+                    if(messageType == PacketTypes.CREATION_INVALID):
+                        print "Creation INVALID!"
+            except Exception, e:
+                print e
+                print e.message
+                conn.close()
+        except:
+            pass
+        
+    def hoverPlusMinus(self, event):
+        self.description.configure(text = "Point Allocation : Use LEFT-CLICK to ADD points and RIGHT-CLICK to REMOVE the points you've added")
         
     def hoverStrength(self, event):
         self.description.configure(text = "Strength : A measure of ones physical strength. Increases physical damage and slightly increases max health")
