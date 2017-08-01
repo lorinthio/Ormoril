@@ -40,7 +40,7 @@ class Server:
     def handleClientConnection(self, client, address):
         try:
             while True:
-                packet = client.recv(1024)
+                packet = client.recv(2048)
                 data = Serialization.deserialize(packet)
                 msg = data["message"]
                 if PacketTypes.LOGIN_PACKETS[0] <= msg and msg <= PacketTypes.ACCOUNT_PACKETS[1]:

@@ -39,27 +39,34 @@ class ModLoader:
         
     def _loadRooms(self):
         from Mods.Rooms import *
-        
-    def getAbility(self, name):
-        return self.abilities.get(name.lower())
-
-    def getClass(self, name):
-        return self.classes.get(name.lower())
-
-    def getCreature(self, name):
-        return self.creatures.get(name.lower())
-
-    def getNpc(self, name):
-        return self.npcs.get(name.lower())
-
-    def getQuest(self, name):
-        return self.quests.get(name.lower())
-
-    def getRace(self, name):
-        return self.races.get(name.lower())
-
-    def getRoom(self, name):
-        return self.rooms.get(name.lower())
+    
+    @staticmethod        
+    def getAbility(name):
+        return ModLoader.abilities.get(name.lower())
+    
+    @staticmethod
+    def getClass(name):
+        return ModLoader.classes.get(name.lower())
+    
+    @staticmethod
+    def getCreature(name):
+        return ModLoader.creatures.get(name.lower())
+    
+    @staticmethod
+    def getNpc(name):
+        return ModLoader.npcs.get(name.lower())
+    
+    @staticmethod
+    def getQuest(name):
+        return ModLoader.quests.get(name.lower())
+    
+    @staticmethod
+    def getRace(name):
+        return ModLoader.races.get(name.lower())
+    
+    @staticmethod
+    def getRoom(name):
+        return ModLoader.rooms.get(name.lower())
         
     @staticmethod
     def loadAbility(Ability):

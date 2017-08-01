@@ -1,4 +1,5 @@
 from Common.Utils import PacketTypes, sendPacketToClient
+from Common.Objects import Hero
 from Common.ModLoader import ModLoader
 from random import randint
 
@@ -36,12 +37,19 @@ class CreationPacketHandler:
         
     def handleHeroCreation(self, client, data):
         stats = self.randomValues[data["username"]]
-        Race = data["race"]
-        Class = data["class"]
-        sentStats = data["stats"]
+        hero = data["hero"]
+        print hero.Race.name
+        print hero.Class.name
+        hero.rebuildStats()
+        print hero.stats
+        
         difference = 0 
-        for i in range(6):
-            difference += sentStats[i] - stats[i]
+        difference += hero.stats["strength"] - stats[0]
+        difference += hero.stats["constitution"] - stats[1]
+        difference += hero.stats["dexterity"] - stats[2]
+        difference += hero.stats["agility"] - stats[3]
+        difference += hero.stats["wisdom"] - stats[4]
+        difference += hero.stats["intelligence"] - stats[5]
             
         if difference > 6:
             sendPacketToClient(client, PacketTypes.CREATION_INVALID, None)

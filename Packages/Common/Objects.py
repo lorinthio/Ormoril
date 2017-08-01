@@ -129,10 +129,8 @@ class Hero:
         }
         
         self.health = 100
-        self.healthVar = IntVar()
         self.maxhealth = 100
         self.mana = 100
-        self.manaVar = IntVar()
         self.maxmana = 100
         
         self.strength = 10 # melee damage

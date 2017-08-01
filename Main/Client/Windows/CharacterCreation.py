@@ -60,6 +60,13 @@ class CharacterCreationWindow(Frame):
     def setupVariables(self):
         self.hero = Hero()
         
+        self.strAdded = 0
+        self.conAdded = 0
+        self.dexAdded = 0
+        self.agiAdded = 0
+        self.intAdded = 0
+        self.wisAdded = 0
+        
         self.strengthVar = IntVar()
         self.constitutionVar = IntVar()
         self.dexterityVar = IntVar()
@@ -227,6 +234,19 @@ class CharacterCreationWindow(Frame):
             self.pointsRemaining -= 1
             self.allocationVar.set("Points Remaining ( {} )".format(self.pointsRemaining))
             
+            if(name == "strength"):
+                self.strAdded += 1
+            if(name == "constitution"):
+                self.conAdded += 1
+            if(name == "dexterity"):
+                self.dexAdded += 1
+            if(name == "agility"):
+                self.agiAdded += 1
+            if(name == "intelligence"):
+                self.intAdded += 1
+            if(name == "wisdom"):
+                self.wisAdded += 1
+            
     def rightclick(self, event, var, name):
         augment = False
         if(name == "strength"):
@@ -270,6 +290,13 @@ class CharacterCreationWindow(Frame):
                         self.hero.intelligence = stats[4]
                         self.hero.wisdom = stats[5]
                         
+                        self.strAdded = 0
+                        self.conAdded = 0
+                        self.dexAdded = 0
+                        self.agiAdded = 0
+                        self.intAdded = 0
+                        self.wisAdded = 0
+                        
                         self.pointsRemaining = 6
                         self.allocationVar.set("Points Remaining ( {} )".format(self.pointsRemaining))
                         self.hero.rebuildStats()
@@ -285,8 +312,14 @@ class CharacterCreationWindow(Frame):
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             conn.connect((self.ip, self.port))
             try:
-                print self.hero
-                packet = Serialization.pack(PacketTypes.CREATION_FINAL, { "username": self.player.username, "race": self.hero.Race.name, "class": self.hero.Class.name, "stats": [self.hero.strength, self.hero.constitution, self.hero.dexterity, self.hero.agility, self.hero.intelligence, self.hero.wisdom]})
+                self.hero.strength += self.strAdded
+                self.hero.constitution += self.conAdded
+                self.hero.dexterity += self.dexAdded
+                self.hero.agility += self.agiAdded
+                self.hero.intelligence += self.intAdded
+                self.hero.wisdom += self.wisAdded
+                
+                packet = Serialization.pack(PacketTypes.CREATION_FINAL, { "username": self.player.username, "hero": self.player.hero})
                 conn.send(packet)
                 data = conn.recv(self.PacketSize)
                 if data:
