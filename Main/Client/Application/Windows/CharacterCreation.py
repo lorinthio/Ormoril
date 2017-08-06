@@ -1,11 +1,12 @@
 from Tkinter import *
 import Tkconstants as constants
 import Tkinter as tk
-from Common.WindowHelpers import setupGrid
-from Common.Utils import PacketTypes
-from Common.Objects import Hero
+from Ormoril.WindowHelpers import setupGrid
+from Ormoril.Utils import PacketTypes
+from Ormoril.Objects import Hero
 from collections import OrderedDict
-import Common.Serialization as Serialization
+import Ormoril.Serialization as Serialization
+from Application.Client import ClientConnection
 import socket
 
 class CharacterCreationWindow(Frame):
@@ -31,21 +32,15 @@ class CharacterCreationWindow(Frame):
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             conn.connect((self.ip, self.port))
             try:
-                packet = Serialization.pack(PacketTypes.CREATION_CLASSES, None)
-                conn.send(packet)
-                data = conn.recv(self.PacketSize)
+                data = ClientConnection.sendAndWait(PacketTypes.CREATION_CLASSES, None)
                 if data:
-                    data = Serialization.deserialize(data)
                     messageType = data["message"]
                     if(messageType == PacketTypes.CREATION_CLASSES):
                         for key, value in data["data"].iteritems():
                             self.classes[key.title()] = value
                         
-                packet = Serialization.pack(PacketTypes.CREATION_RACES, None)
-                conn.send(packet)
-                data = conn.recv(2048)
+                data = ClientConnection.sendAndWait(PacketTypes.CREATION_RACES, None, packetSize=4096)
                 if data:
-                    data = Serialization.deserialize(data)
                     messageType = data["message"]
                     if(messageType == PacketTypes.CREATION_RACES):
                         for key, value in data["data"].iteritems():
@@ -128,11 +123,11 @@ class CharacterCreationWindow(Frame):
         height = 400
         self.master.minsize(width, height)
         self.master.maxsize(width, height)
-        self.master.iconbitmap(r'icon.ico')
+        self.master.iconbitmap(r'Images/icon.ico')
         self.master.title("Character Creation")
         
         backgroundColor = "Azure2"
-        self.plusminus = PhotoImage(file="plusminus.gif")
+        self.plusminus = PhotoImage(file="Images/plusminus.gif")
         
         Label(self.master, bg=backgroundColor).place(x=0, y=0, relwidth=1,relheight=1)
         
@@ -272,69 +267,55 @@ class CharacterCreationWindow(Frame):
         
     def randomize(self):
         try:
-            conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            conn.connect((self.ip, self.port))
-            try:
-                packet = Serialization.pack(PacketTypes.CREATION_RANDOMIZE, { "username": self.player.username })
-                conn.send(packet)
-                data = conn.recv(self.PacketSize)
-                if data:
-                    data = Serialization.deserialize(data)
-                    messageType = data["message"]
-                    if(messageType == PacketTypes.CREATION_RANDOMIZE):
-                        stats = data["data"]
-                        self.hero.strength = stats[0]
-                        self.hero.constitution = stats[1]
-                        self.hero.dexterity = stats[2]
-                        self.hero.agility = stats[3]
-                        self.hero.intelligence = stats[4]
-                        self.hero.wisdom = stats[5]
-                        
-                        self.strAdded = 0
-                        self.conAdded = 0
-                        self.dexAdded = 0
-                        self.agiAdded = 0
-                        self.intAdded = 0
-                        self.wisAdded = 0
-                        
-                        self.pointsRemaining = 6
-                        self.allocationVar.set("Points Remaining ( {} )".format(self.pointsRemaining))
-                        self.hero.rebuildStats()
-                        self.updateGUIVariables()
-            except:
-                conn.close()
+            data = ClientConnection.sendAndWait(PacketTypes.CREATION_RANDOMIZE, { "username": self.player.username })
+            if data:
+                messageType = data["message"]
+                if(messageType == PacketTypes.CREATION_RANDOMIZE):
+                    stats = data["data"]
+                    self.hero.strength = stats[0]
+                    self.hero.constitution = stats[1]
+                    self.hero.dexterity = stats[2]
+                    self.hero.agility = stats[3]
+                    self.hero.intelligence = stats[4]
+                    self.hero.wisdom = stats[5]
+                    
+                    self.strAdded = 0
+                    self.conAdded = 0
+                    self.dexAdded = 0
+                    self.agiAdded = 0
+                    self.intAdded = 0
+                    self.wisAdded = 0
+                    
+                    self.pointsRemaining = 6
+                    self.allocationVar.set("Points Remaining ( {} )".format(self.pointsRemaining))
+                    self.hero.rebuildStats()
+                    self.updateGUIVariables()
         except:
             pass        
         
     def finish(self):
         self.player.hero = self.hero
         try:
-            conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            conn.connect((self.ip, self.port))
-            try:
-                self.hero.strength += self.strAdded
-                self.hero.constitution += self.conAdded
-                self.hero.dexterity += self.dexAdded
-                self.hero.agility += self.agiAdded
-                self.hero.intelligence += self.intAdded
-                self.hero.wisdom += self.wisAdded
-                
-                packet = Serialization.pack(PacketTypes.CREATION_FINAL, { "username": self.player.username, "hero": self.player.hero})
-                conn.send(packet)
-                data = conn.recv(self.PacketSize)
-                if data:
-                    data = Serialization.deserialize(data)
-                    messageType = data["message"]
-                    if(messageType == PacketTypes.CREATION_SUCCESS):
-                        print "Creation Complete!"
-                    if(messageType == PacketTypes.CREATION_INVALID):
-                        print "Creation INVALID!"
-            except Exception, e:
-                print e
-                print e.message
-                conn.close()
+            self.hero.strength += self.strAdded
+            self.hero.constitution += self.conAdded
+            self.hero.dexterity += self.dexAdded
+            self.hero.agility += self.agiAdded
+            self.hero.intelligence += self.intAdded
+            self.hero.wisdom += self.wisAdded
+            
+            data = ClientConnection.sendAndWait(PacketTypes.CREATION_FINAL, { "username": self.player.username, "hero": self.player.hero})
+            if data:
+                messageType = data["message"]
+                if(messageType == PacketTypes.CREATION_SUCCESS):
+                    self.player.hero = self.hero
+                    self.close()
+                if(messageType == PacketTypes.CREATION_INVALID):
+                    print "Creation INVALID!"
         except:
             pass
+        
+    def close(self):
+        self.master.destroy()    
         
     def hoverPlusMinus(self, event):
         self.description.configure(text = "Point Allocation : Use LEFT-CLICK to ADD points and RIGHT-CLICK to REMOVE the points you've added")

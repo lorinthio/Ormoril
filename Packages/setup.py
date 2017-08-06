@@ -13,13 +13,13 @@ versionFile = open("version.txt", "w")
 versionFile.write(versionText)
 versionFile.close()
 
-setup(name="OrmorilCommon",
+setup(name="Ormoril",
       version=versionText,
       description="A package used to share packet information and other utilities between client and server",
-      url="http://github.com/lorinthio/TextBasedRpg",
+      url="http://github.com/lorinthio/Ormoril",
       author="Lorinthio",
       author_email="lorinthio@yahoo.com",
       license="MIT",
-      packages=["Common"],
+      packages=["Ormoril"],
       zip_safe=False)
 

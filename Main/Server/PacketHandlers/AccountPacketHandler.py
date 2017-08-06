@@ -77,7 +77,6 @@ class AccountPacketHandler:
                 #self.database.
                 heroes = self.characterService.getPlayerHeroesByAccountId(account[0])
                 sendPacketToClient(client, PacketTypes.LOGIN_ATTEMPT_RESPONSE, {"success": True, "heroes": heroes, "forceToCreate": (len(heroes) == 0)})
-                self.server.playerLogin(client, username)
             else:
                 sendPacketToClient(client, PacketTypes.LOGIN_ATTEMPT_RESPONSE, {"success": False})
         else:

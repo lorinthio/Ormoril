@@ -25,7 +25,7 @@ class GameWindow(Frame):
         self.master.title("Text Based Adventure")
         self.master.maxsize(1366, 968)
         self.master.minsize(900,600)
-        self.master.iconbitmap(r'icon.ico')
+        self.master.iconbitmap(r'Images/icon.ico')
         self.master["bg"] = "white"
         
     def setupChatFrame(self):

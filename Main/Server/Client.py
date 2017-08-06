@@ -38,7 +38,7 @@ class ClientConnection:
             sleep(1.5)    
                 
     def close(self):
-        print self.accountName + " has disconnected!"
+        print self.accountName + " has disconnected! ({})".format(reason)
         if self.client:
             try:
                 self.server.playerLogoff(self, self.accountName)

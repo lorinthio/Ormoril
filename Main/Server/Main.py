@@ -34,7 +34,6 @@ class Server:
         self.sock.listen(5)
         while True:
             client, address = self.sock.accept()
-            client.settimeout(5)
             Thread(target = self.handleClientConnection, args= (client, address)).start()
         
     def handleClientConnection(self, client, address):

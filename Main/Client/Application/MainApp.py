@@ -7,15 +7,21 @@ from Client import ClientConnection
 
 class Application:
      
+     closed = False
+     
      def __init__(self):
           self.player = Player()
           
      def start(self):
+          ClientConnection(self.player)
           login(self.player)
-          client = ClientConnection(self.player)
-          
+          ClientConnection.attemptConnect()
           if self.player.needToCreate:
                self.loadWindow(CharacterCreationWindow(self.player))
+          #else:
+               #player select hero
+               #self.loadWindow(CharacterSelectWindow(self.player))
+          
           if self.player.isLoggedIn and self.player.hero:
                self.loadWindow(GameWindow(self.player))
 
@@ -26,6 +32,3 @@ class Application:
 
      def disconnect(self):
           ClientConnection.disconnect()
-
-if __name__ == "__main__":
-     Application().start()

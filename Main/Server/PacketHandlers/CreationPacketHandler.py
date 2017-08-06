@@ -38,10 +38,7 @@ class CreationPacketHandler:
     def handleHeroCreation(self, client, data):
         stats = self.randomValues[data["username"]]
         hero = data["hero"]
-        print hero.Race.name
-        print hero.Class.name
         hero.rebuildStats()
-        print hero.stats
         
         difference = 0 
         difference += hero.stats["strength"] - stats[0]
